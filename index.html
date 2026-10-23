@@ -442,4 +442,97 @@ if(page==='resume')renderConversation();
  document.addEventListener('click',e=>{if(e.target.closest('#goResume'))setTimeout(()=>{if(page==='resume')renderCalm()},0)},true);
  if(page==='resume')renderCalm();
 })();
+</script>
+<style id="myuni-experience-effects-style">
+.vault-card{padding:19px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.vault-card summary{cursor:pointer;font-weight:700;list-style:none;display:flex;align-items:center;gap:10px;justify-content:space-between}
+.vault-card summary::-webkit-details-marker{display:none}
+.vault-card summary:after{content:"＋";font-size:22px;color:var(--accent)}
+.vault-card[open] summary:after{content:"−"}
+.vault-detail{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:15px 0}
+.vault-field{border-radius:11px;background:var(--surface2);padding:11px;min-width:0}
+.vault-field .micro{display:block;margin-bottom:5px}.vault-field strong{overflow-wrap:anywhere}
+.vault-heading{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vault-section{display:grid;gap:13px}
+.vault-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.check-folds details{margin:12px 0;border:1px solid var(--line);border-radius:14px;padding:0 14px;background:var(--surface2)}
+.check-folds summary{cursor:pointer;list-style:none;padding:14px 3px;font-weight:700;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.check-folds summary::-webkit-details-marker{display:none}
+.check-folds summary:after{content:"＋";font-size:19px;color:var(--accent)}
+.check-folds details[open] summary:after{content:"−"}
+.check-folds .check{padding:12px 5px}
+#myuni-weather{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:1}
+.myuni-fall{position:absolute;top:-40px;opacity:.42;user-select:none;will-change:transform;animation:myuni-fall var(--duration,13s) linear infinite;animation-delay:var(--delay,0s);left:var(--left,20%);font-size:var(--size,16px);color:var(--fallcolor,#ffc8e5)}
+.myuni-rain{position:absolute;top:-35px;left:var(--left,20%);width:1px;height:var(--length,22px);opacity:.28;background:var(--fallcolor,#a9bbff);transform:rotate(12deg);animation:myuni-rain var(--duration,2s) linear infinite;animation-delay:var(--delay,0s)}
+@keyframes myuni-fall{0%{transform:translate3d(0,-30px,0) rotate(0deg)}50%{transform:translate3d(35px,52vh,0) rotate(175deg)}100%{transform:translate3d(-18px,110vh,0) rotate(350deg)}}
+@keyframes myuni-rain{0%{transform:translate3d(0,-40px,0) rotate(12deg)}100%{transform:translate3d(-65px,110vh,0) rotate(12deg)}}
+.app{position:relative;z-index:2}#myuni-weather{z-index:3}#myuni-weather .myuni-fall,#myuni-weather .myuni-rain{pointer-events:none}
+.weather-controls{margin:14px 0;padding:11px 9px;border:1px solid var(--line);border-radius:13px}
+.weather-controls select{padding:7px;font-size:12px}
+html[data-theme="light"] .myuni-fall{opacity:.31}
+@media(prefers-reduced-motion:reduce){.myuni-fall,.myuni-rain{animation:none!important;display:none!important}}
+@media(max-width:760px){.vault-detail{grid-template-columns:1fr}}
+</style>
+<script id="myuni-experience-effects-script">
+(function(){
+const experiences=[
+{id:"kacst",type:"Research",organization:"King Abdulaziz City for Science and Technology (KACST)",position:"Research Intern / Software & Implementation Engineer",location:"Riyadh, Saudi Arabia",start:"June 2025",end:"August 2025",supervisor:"Dr. Mohammed Alhamadi",description:"Contributed to research on real-time recognition of user interaction strategies in adaptive visual analytics dashboards. Developed interaction logging for clicking, hovering, scrolling, and navigation; participated in an experimental study with five volunteers and analyzed 40 interaction logs with 425 annotation windows.",note:"Supervisor details from research presentation. Hours/week, payment and academic credit were not confirmed."},
+{id:"freelance",type:"Professional",organization:"Self-Employed (MHRSD-registered freelance practitioner)",position:"Freelance Web Developer",location:"Saudi Arabia",start:"March 2025",end:"Present",supervisor:"Not applicable — self-employed",description:"Design and develop web applications using React, Next.js, TypeScript, Supabase and PostgreSQL. Build user interfaces, application workflows and backend integrations.",note:"MHRSD issued a freelance practitioner certificate; it is not the employer."},
+{id:"kkz",type:"Employment",organization:"Kristina Kidz Centre",position:"English Instructor",location:"Saudi Arabia",start:"June 2026",end:"Present",supervisor:"Not recorded",description:"English-language instruction.",note:"Avoid adding detailed duties or work hours until verified."},
+{id:"iau",type:"Employment",organization:"Imam Abdulrahman Bin Faisal University — Scientific Research Agency",position:"Administrative Assistant",location:"Saudi Arabia",start:"June 2023",end:"July 2023",supervisor:"Not recorded",description:"Administrative support in the Scientific Research Agency.",note:"Exact duties and weekly hours were not confirmed."}
+];
+const expKey="myuni-experiences-v1";
+let stored={};try{stored=JSON.parse(localStorage.getItem(expKey))||{}}catch{}
+for(const exp of experiences){if(!stored[exp.id])stored[exp.id]={...exp}}
+function escape(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function keep(){localStorage.setItem(expKey,JSON.stringify(stored))}
+function copyText(value){if(navigator.clipboard?.writeText){navigator.clipboard.writeText(value).catch(()=>fallback(value))}else fallback(value)}
+function fallback(value){const a=document.createElement("textarea");a.value=value;document.body.append(a);a.select();document.execCommand("copy");a.remove()}
+function textExp(e){return ["Organization: "+e.organization,"Position: "+e.position,"Experience Type: "+e.type,"Location: "+e.location,"Start Date: "+e.start,"End Date: "+e.end,"Supervisor: "+e.supervisor,"Description: "+e.description].join("\n")}
+const nav=document.createElement("button");nav.className="nav";nav.dataset.page="experiences";nav.textContent="◈ Copy experiences";document.querySelector('[data-page="profile"]').after(nav);
+function display(){
+const host=document.getElementById("view");if(!host)return;
+host.innerHTML='<div class="hint">Copy your experience information into admissions forms. Dates, job titles and descriptions are editable. Verify anything marked “Not recorded” before submitting. Your edits are saved in this browser.</div><div class="vault-section">'+Object.values(stored).map(e=>'<details class="vault-card"><summary><span class="vault-heading"><span>'+escape(e.position)+'</span><span class="mini-tag">'+escape(e.type)+'</span></span></summary><p class="muted">'+escape(e.organization)+'</p><div class="vault-detail">'+["organization","position","type","location","start","end","supervisor"].map(k=>'<div class="vault-field"><span class="micro">'+escape(({organization:"Organization",position:"Position",type:"Experience type",location:"Location",start:"Start date",end:"End date",supervisor:"Supervisor"}[k]))+'</span><strong>'+escape(e[k])+'</strong><div style="margin-top:7px"><button class="btn secondary sm" data-vcopy="'+escape(e.id)+'" data-vfield="'+k+'">Copy</button></div></div>').join("")+'</div><div class="vault-field"><span class="micro">Description</span><p>'+escape(e.description)+'</p><button class="btn secondary sm" data-vcopy="'+escape(e.id)+'" data-vfield="description">Copy description</button></div><p class="resume-tiny-note">'+escape(e.note||"")+'</p><div class="vault-actions"><button class="btn sm" data-vall="'+escape(e.id)+'">Copy full entry</button><button class="btn secondary sm" data-vedit="'+escape(e.id)+'">Edit experience</button></div></details>').join("")+'</div><div class="card section"><h2>Add your own experience</h2><p class="muted">You can add internships, volunteering or work experience here.</p><button class="btn" id="vault-add">+ Add experience</button></div>';
+}
+const oldNavigate=navigate;
+navigate=function(p){oldNavigate(p);if(p==="experiences"){page=p;document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.page===p));document.getElementById("title").textContent="Experience vault";document.getElementById("subtitle").textContent="All your roles and research experience, ready to copy.";display()}};
+nav.onclick=()=>navigate("experiences");
+document.addEventListener("click",e=>{
+const b=e.target.closest("[data-vcopy]");if(b){copyText(stored[b.dataset.vcopy]?.[b.dataset.vfield]||"");return}
+const all=e.target.closest("[data-vall]");if(all){copyText(textExp(stored[all.dataset.vall]));return}
+const edit=e.target.closest("[data-vedit]");if(edit)editExperience(edit.dataset.vedit);
+if(e.target.closest("#vault-add"))editExperience(null);
+});
+function editExperience(id){
+const old=id?stored[id]:{id:"user-"+Date.now(),organization:"",position:"",type:"Professional",location:"",start:"",end:"",supervisor:"",description:"",note:""};
+const fields=[["organization","Organization"],["position","Position / title"],["type","Experience type"],["location","Location"],["start","Start date"],["end","End date"],["supervisor","Supervisor / mentor"],["description","Description"],["note","Your notes"]];
+const dialog=document.createElement("dialog");dialog.innerHTML='<h2>Edit experience</h2><form class="stack">'+fields.map(([k,label])=>'<div><label>'+label+'</label>'+(k==="description"||k==="note"?'<textarea name="'+k+'">'+escape(old[k])+'</textarea>':'<input name="'+k+'" value="'+escape(old[k])+'">')+'</div>').join("")+'<div class="actions"><button class="btn" type="submit">Save</button><button type="button" class="btn secondary" data-cancel>Cancel</button></div></form>';document.body.append(dialog);dialog.showModal();
+dialog.querySelector("[data-cancel]").onclick=()=>{dialog.close();dialog.remove()};
+dialog.querySelector("form").onsubmit=ev=>{ev.preventDefault();stored[old.id]={...old,...Object.fromEntries(new FormData(ev.target))};keep();dialog.close();dialog.remove();display()};
+}
+let checklistHost=document.getElementById("view");
+const checklistObserver=new MutationObserver(()=>{
+if(page!=="requirements")return;
+const root=document.getElementById("view");
+for(const card of root.querySelectorAll(".card")){
+if(card.dataset.folded==="yes"||!card.querySelector(".check"))continue;
+card.dataset.folded="yes";card.classList.add("check-folds");
+const checks=[...card.querySelectorAll(".check")];
+const groups=[{name:"Program & eligibility",indexes:[0,1,2,3]},{name:"Documents & essays",indexes:[4,5,6,7,9]},{name:"Recommendations & submission",indexes:[8,10,11,12]}];
+groups.forEach((g,j)=>{
+const details=document.createElement("details");
+details.open=j===0;const summary=document.createElement("summary");summary.textContent=g.name;details.append(summary);
+g.indexes.forEach(i=>{if(checks[i])details.append(checks[i])});card.append(details);
+});
+}
+});
+checklistObserver.observe(checklistHost,{childList:true,subtree:false});
+let effects="off";try{effects=localStorage.getItem("myuni-effect")||"sakura"}catch{effects="sakura"}
+const control=document.createElement("div");control.className="weather-controls";control.innerHTML='<label for="myuni-effect-control">AMBIENCE</label><select id="myuni-effect-control"><option value="sakura">🌸 Sakura petals</option><option value="rain">☂ Soft rain</option><option value="off">Off / focus mode</option></select>';const sidebar=document.querySelector(".sidebar");sidebar.insertBefore(control,sidebar.querySelector(".theme-switcher")?.nextSibling||sidebar.firstChild);const select=control.querySelector("select");
+const layer=document.createElement("div");layer.id="myuni-weather";layer.setAttribute("aria-hidden","true");document.body.append(layer);
+function setEffect(value){effects=value;select.value=value;localStorage.setItem("myuni-effect",value);layer.replaceChildren();if(value==="off"||matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+const count=value==="sakura"?18:34;for(let i=0;i<count;i++){const span=document.createElement("span");span.className=value==="sakura"?"myuni-fall":"myuni-rain";if(value==="sakura")span.textContent=Math.random()>.38?"✿":"❀";span.style.setProperty("--left",(Math.random()*100)+"%");span.style.setProperty("--duration",value==="sakura"?(11+Math.random()*12)+"s":(1.4+Math.random()*2)+"s");span.style.setProperty("--delay",(-Math.random()*22)+"s");span.style.setProperty("--size",(12+Math.random()*11)+"px");span.style.setProperty("--length",(11+Math.random()*25)+"px");span.style.setProperty("--fallcolor",value==="sakura"?"#ffb9d9":"#aac5e6");layer.append(span)}}
+select.onchange=()=>setEffect(select.value);setEffect(["sakura","rain","off"].includes(effects)?effects:"sakura");
+keep();
+})();
 </script></body></html>
