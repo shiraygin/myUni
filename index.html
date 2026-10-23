@@ -761,4 +761,39 @@ html[data-theme="light"] .resume-calm-card .resume-major::before{color:#674280}
  document.addEventListener('change',e=>{if(page==='essays'&&e.target.id==='essayUni'){chosen=e.target.value;view()}});
  document.addEventListener('input',e=>{if(page!=='essays'||!e.target.dataset.essay)return;const d=getDraft(currentUni());d[e.target.dataset.essay]=e.target.value;d.lastEdited=new Date().toISOString();saveDrafts();const c=$('essayWordCount');if(c&&e.target.dataset.essay===doc)c.textContent=count(e.target.value);const t=$('essaySaved');if(t)t.textContent='Saved locally'});
 })();
+</script>
+<style id="jhu-prompt-choice-style">
+.jhu-choice-box{border:1px solid var(--line);border-radius:14px;background:var(--surface2);padding:16px;margin:12px 0 18px}
+.jhu-choice-title{font-weight:800;margin:0 0 7px;font-size:16px}
+.jhu-choice-desc{font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.5}
+.jhu-prompt-option{display:block;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:14px;margin:9px 0;cursor:pointer}
+.jhu-prompt-option:has(input:checked){border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+.jhu-prompt-option strong{color:var(--text);display:block;margin:0 0 4px}
+.jhu-prompt-option small{display:block;color:var(--muted);line-height:1.5;padding-left:23px}
+.jhu-prompt-option input{width:auto;accent-color:var(--accent);margin-right:8px}
+</style>
+<script id="jhu-prompt-choice-script">
+(function(){
+const key='myuni-jhu-personal-prompt-choice';
+const options=[
+{title:'Option 1 — Personal background and experiences',description:'Explain how your background and life experiences have shaped you, and how you would contribute to the Johns Hopkins community.'},
+{title:'Option 2 — Engineering challenge in your community',description:'Identify an engineering problem affecting your local community and discuss actions you could take to address it.'}
+];
+function install(){
+if(typeof page==='undefined'||page!=='essays'||typeof doc==='undefined')return;
+const uni=document.getElementById('essayUni');if(!uni||uni.value!=='jhu')return;
+const tab=document.getElementById('tabPersonal');if(!tab||tab.getAttribute('aria-selected')!=='true')return;
+const panel=document.querySelector('.essay-panel');if(!panel||panel.querySelector('#jhu-prompt-choice'))return;
+const block=document.createElement('div');block.id='jhu-prompt-choice';block.className='jhu-choice-box';
+let choice=localStorage.getItem(key)||'';
+block.innerHTML='<p class="jhu-choice-title">Johns Hopkins · Choose ONE Personal Statement prompt</p><p class="jhu-choice-desc">These are concise summaries of the two options previously discussed—not verbatim portal text. Confirm the exact wording in your application. Maximum: one page.</p>'+
+ options.map((o,i)=>'<label class="jhu-prompt-option"><strong><input type="radio" name="jhu-statement-choice" value="'+(i+1)+'" '+(choice===String(i+1)?'checked':'')+'>'+o.title+'</strong><small>'+o.description+'</small></label>').join('')+
+ '<p class="jhu-choice-desc">Your Personal Statement draft remains saved separately from your SOP. Selecting a prompt does not overwrite your writing.</p>';
+const anchor=panel.querySelector('.essay-two');if(anchor)panel.insertBefore(block,anchor);else panel.prepend(block);
+block.addEventListener('change',event=>{if(event.target.name==='jhu-statement-choice')localStorage.setItem(key,event.target.value)});
+}
+const target=document.getElementById('view');if(target)new MutationObserver(()=>install()).observe(target,{childList:true});
+document.addEventListener('click',()=>queueMicrotask(install));
+install();
+})();
 </script></body></html>
