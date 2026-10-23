@@ -572,4 +572,47 @@ html[data-theme] .pill{background:var(--surface2);border:1px solid var(--line)}
 html[data-theme="light"] .zee-greeting{color:var(--text)}
 html[data-theme] .weather-controls{background:var(--surface);border-color:var(--line)}
 @media(prefers-reduced-motion:reduce){#myuni-weather{display:none!important}}
-</style></body></html>
+</style>
+<style id="inventory-style">
+.inventory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.inventory-stat{padding:17px;border:1px solid var(--line);border-radius:15px;background:var(--surface)}
+.inventory-stat b{display:block;font-size:25px;margin-top:5px}
+.inventory-item{display:flex;gap:13px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:13px;padding:15px;background:var(--surface)}
+.inventory-name{font-weight:700}.inventory-note{color:var(--muted);font-size:12px;margin-top:5px}
+.inventory-list{display:grid;gap:10px}
+.inventory-status{max-width:160px;font-size:12px;flex-shrink:0}
+.inventory-status.have{border-color:var(--success)}.inventory-status.missing{border-color:var(--warning)}
+.inventory-status.progress{border-color:var(--accent)}
+.inventory-focus{padding:17px;border-radius:13px;border-left:4px solid var(--warning);background:color-mix(in srgb,var(--surface) 90%,#eddbb0)}
+@media(max-width:680px){.inventory-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.inventory-item{align-items:flex-start;flex-direction:column}.inventory-status{max-width:none}.inventory-stat{padding:10px}.inventory-stat b{font-size:21px}}
+</style>
+<script id="inventory-script">
+(function(){
+const key='myuni-inventory-v1';
+const defaults=[
+{id:'cv',name:'Academic CV',status:'have',note:'Existing academic CV; check final version before each upload.'},
+{id:'transcript',name:'Academic Transcript',status:'have',note:'IAU undergraduate transcript available.'},
+{id:'degree',name:'Graduation Certificate',status:'have',note:'BSc Computer Science degree certificate available.'},
+{id:'moi',name:'Medium of Instruction (MOI)',status:'progress',note:'Requested from IAU; certificate not yet confirmed received.'},
+{id:'ielts',name:'IELTS Academic',status:'missing',note:'Not taken. Target computer-delivered test in late November or early December 2026 if needed.'},
+{id:'sop',name:'Master SOP',status:'missing',note:'Prepare master draft, then tailor for each university.'},
+{id:'personal',name:'Personal Statement',status:'missing',note:'Prepare based on each university’s actual prompt.'},
+{id:'recommendations',name:'Recommendation Letters',status:'missing',note:'Track invitations and submission separately in each university checklist.'},
+{id:'sample',name:'Sample of Work',status:'progress',note:'SmartReviewer materials exist; application-ready PDF not confirmed.'}
+];
+let inventory;try{inventory=JSON.parse(localStorage.getItem(key))}catch{}if(!Array.isArray(inventory))inventory=defaults;for(const d of defaults)if(!inventory.some(x=>x.id===d.id))inventory.push(d);
+const saveInv=()=>localStorage.setItem(key,JSON.stringify(inventory));
+const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+const statuses={have:'✓ Have it',progress:'◷ In progress',missing:'○ Missing',na:'— Not needed'};
+const nav=document.createElement('button');nav.className='nav';nav.dataset.page='inventory';nav.textContent='▣ My inventory';const target=document.querySelector('[data-page="documents"]')||document.querySelector('[data-page="profile"]');target.before(nav);
+function renderInventory(){
+const host=document.getElementById('view'),counts={have:0,progress:0,missing:0};for(const d of inventory)if(counts[d.status]!==undefined)counts[d.status]++;
+host.innerHTML='<div class="hint"><strong>Your files, at a glance.</strong> “Have it” means the document is in your possession, not necessarily uploaded or approved by a university.</div><div class="inventory-grid"><div class="inventory-stat"><span class="micro">✓ Have</span><b style="color:var(--success)">'+counts.have+'</b></div><div class="inventory-stat"><span class="micro">◷ In progress</span><b style="color:var(--accent)">'+counts.progress+'</b></div><div class="inventory-stat"><span class="micro">○ Missing</span><b style="color:var(--warning)">'+counts.missing+'</b></div></div><div class="inventory-focus"><strong>IELTS plan:</strong> Aim for November 21–December 5, 2026 if a waiver is not confirmed. Allow extra time for results and official score transmission. This is a planning recommendation, not a booked exam.</div><h2 class="section">My documents</h2><div class="inventory-list">'+inventory.map(d=>'<div class="inventory-item"><div><div class="inventory-name">'+esc(d.name)+'</div><div class="inventory-note">'+esc(d.note||'')+'</div><button class="btn secondary sm" style="margin-top:7px" data-editinv="'+esc(d.id)+'">Edit note</button></div><select class="inventory-status '+esc(d.status)+'" data-inv="'+esc(d.id)+'">'+Object.entries(statuses).map(([k,v])=>'<option value="'+k+'" '+(d.status===k?'selected':'')+'>'+v+'</option>').join('')+'</select></div>').join('')+'</div><div class="card section"><div class="row"><div><h2>Add an inventory item</h2><p class="muted small">Useful for certificates, language tests and other reusable documents.</p></div><button class="btn" id="addInventory">+ Add item</button></div></div>';
+}
+const previousNav=navigate;navigate=function(p){previousNav(p);if(p==='inventory'){page=p;document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('active',n.dataset.page===p));document.getElementById('title').textContent='My inventory';document.getElementById('subtitle').textContent='Everything you have, what is in progress, and what is missing.';renderInventory()}};
+nav.onclick=()=>navigate('inventory');
+document.addEventListener('change',e=>{if(e.target.dataset.inv){const x=inventory.find(d=>d.id===e.target.dataset.inv);if(x){x.status=e.target.value;saveInv();renderInventory()}}});
+document.addEventListener('click',e=>{const id=e.target.dataset.editinv;if(id){const x=inventory.find(d=>d.id===id);const v=prompt('Edit note for '+x.name,x.note||'');if(v!==null){x.note=v;saveInv();renderInventory()}}if(e.target.id==='addInventory'){const name=prompt('What do you want to track?');if(name?.trim()){inventory.push({id:'custom-'+Date.now(),name:name.trim(),status:'missing',note:''});saveInv();renderInventory()}}});
+saveInv();if(page==='inventory')renderInventory();
+})();
+</script></body></html>
