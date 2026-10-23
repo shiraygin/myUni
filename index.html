@@ -366,7 +366,6 @@ const pending={
   'Tailor SOP and check all program-specific documents.',
   'Request recommendations, complete and review portal, submit, retain confirmation.'
  ]};
-const oldRenderResume=renderResume;
 function seedOnce(){
  data.extra??={};data.extra.conversationApps??={};
  for(const id of ids){
@@ -388,7 +387,7 @@ function renderConversation(){
  '<div class="stack">'+current.map(u=>{
  const id=u.id,done=(u.done||[]).map(i=>taskNames[i]).filter(Boolean);
  const remaining=taskNames.filter((t,i)=>!(u.done||[]).includes(i));
- const percent=extend().acceptance?.[id]||'Not estimated';
+ const percent=data.extra?.acceptance?.[id]||({jhu:'45–60%',washu:'40–55%'}[id]);
  return '<div class="card" style="padding:24px"><div class="row"><div><h2>'+escapeHTML(u.name)+'</h2><p>'+escapeHTML(u.program)+'</p></div><div class="top-actions"><button class="btn" data-select="'+escapeHTML(id)+'">Resume workspace →</button>'+(u.portal?'<a class="btn secondary sm" href="'+escapeHTML(u.portal)+'" target="_blank" rel="noopener noreferrer">Open portal ↗</a>':'')+'</div></div><div class="top-actions"><span class="pill">Status: Started, not confirmed submitted</span><span class="pill">Deadline: '+escapeHTML(next(u).date||'Needs verification')+'</span><span class="pill">Previous estimate: '+escapeHTML(percent)+'</span></div>'+(id==='jhu'?'<p class="micro">The previous estimate was for JHU Data Science, not this CS application. It is not a trustworthy chance estimate.</p>':'<p class="micro">The previous estimate was for an AI Engineering program and may not apply to the actual WashU application.</p>')+'<div class="conv-panel"><div><h3>✓ Already worked on together</h3><ul class="conv-list">'+evidence[id].map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul></div><div><h3>○ Still needs confirmation / completion</h3><ul class="conv-list">'+pending[id].map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul></div></div><div class="conversation-evidence"><strong>Portal checklist:</strong> '+done.length+' marked complete · '+remaining.length+' unchecked. Discussed items above are not automatically checked.</div><div class="top-actions"><button class="btn secondary sm" data-checkresume="'+escapeHTML(id)+'">View checkboxes</button><button class="btn secondary sm" data-select="'+escapeHTML(id)+'">Continue SOP and notes</button></div></div>'
  }).join('')+'</div><div class="card section"><h2>Considering other universities?</h2><p class="muted">All other programs remain in the Universities section, not here. Only Johns Hopkins and WashU are known from our conversation as applications already started.</p><button class="btn secondary sm" id="showallapps">View university shortlist</button></div>';
 }
