@@ -321,4 +321,86 @@ render();
   document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){show();choose()}});
   show();
 })();
+</script>
+<style>
+.conversation-evidence{border-left:3px solid var(--accent,#d6b9f1);padding:9px 12px;margin:10px 0;background:var(--surface2,#33293f);border-radius:7px}
+.conv-panel{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:850px){.conv-panel{grid-template-columns:1fr}}
+.conv-list{margin:7px 0 0;padding-left:20px;line-height:1.9}
+</style>
+<script id="resume-conversation-repair">
+(function(){
+const ids=['jhu','washu'];
+const seeded={
+ jhu:{name:'Johns Hopkins University',program:'MSE Computer Science',track:'Artificial Intelligence',status:'inprogress',deadline:'2027-02-15',verified:'yes',notes:'Opened the JHU MSE Computer Science application. Program and AI area selected in conversation. Two recommendations required. SOP maximum 1,000 words. Personal statement optional, one page. English medium-of-instruction exemption request discussed; approval is not confirmed.'},
+ washu:{name:'Washington University in St. Louis',program:'McKelvey Engineering — CS master’s application (exact major to confirm)',track:'Computer Science / AI — confirm program',status:'inprogress',priority:'2026-12-31',deadline:'2027-03-01',verified:'no',notes:'Started McKelvey graduate application. Academic history, prerequisite course entries and research-experience form discussed. The precise submitted degree name, dates and portal submissions must be confirmed.'}
+};
+const evidence={
+ jhu:[
+  'Opened MSE Computer Science application; selected Artificial Intelligence as area of interest.',
+  'Discussed English-language waiver based on English instruction and requested a Medium of Instruction letter from IAU.',
+  'Reviewed academic prerequisites, university coursework and experience entries.',
+  'Discussed CV, SOP requirements, recommendation letters and optional personal statement.'
+ ],
+ washu:[
+  'Started McKelvey School of Engineering application (not Brown School).',
+  'Worked through academic history: IAU, Bachelor of Science in Computer Science, GPA 4.06/5.',
+  'Mapped Intro to Computing / Fundamentals of Programming and Data Structures / Algorithms to prerequisite course fields.',
+  'Prepared KACST research-experience description and mentor details for the form.',
+  'Discussed English proficiency documentation, employment entries and recommendation requirements.'
+ ]};
+const pending={
+ jhu:[
+  'Confirm selected program and actual portal submission status.',
+  'Finish and tailor SOP (maximum 1,000 words).',
+  'Decide whether to include optional personal statement and sample of work.',
+  'Confirm MOI waiver decision or arrange a language test.',
+  'Check recommendation invitations and uploaded documents.',
+  'Review every portal field, submit application, and retain confirmation.'
+ ],
+ washu:[
+  'Confirm exact McKelvey degree/major selected in the portal.',
+  'Verify exact deadline for that chosen degree on an official page.',
+  'Finish research-experience details including actual hours/week and compensation.',
+  'Confirm English-test requirement or written exemption.',
+  'Tailor SOP and check all program-specific documents.',
+  'Request recommendations, complete and review portal, submit, retain confirmation.'
+ ]};
+const oldRenderResume=renderResume;
+function seedOnce(){
+ data.extra??={};data.extra.conversationApps??={};
+ for(const id of ids){
+  let u=data.unis.find(x=>x.id===id);
+  if(!u){u={id,...seeded[id],done:[]};data.unis.unshift(u)}
+  // Preserve user modifications, only migrate placeholders from the original starter.
+  if(id==='washu'&&(u.program==='McKelvey Engineering — confirm exact program'||!u.program))u.program=seeded[id].program;
+  if(!u.done)u.done=[];
+  // Conversation milestones are not submission checklist checkmarks.
+  data.extra.conversationApps[id]??={notes:'',verifiedMilestones:[]};
+ }
+ save();
+}
+function renderConversation(){
+ const root=document.getElementById('view');
+ if(!root)return;
+ const current=ids.map(id=>data.unis.find(u=>u.id===id)).filter(Boolean);
+ root.innerHTML='<div class="hint"><strong>Recovered from our conversations.</strong> We started two university applications: Johns Hopkins and WashU. The items labeled “Discussed” are things we worked through here, <strong>not proof they were entered, uploaded or submitted in the university portals.</strong> No application is assumed submitted.</div>'+
+ '<div class="stack">'+current.map(u=>{
+ const id=u.id,done=(u.done||[]).map(i=>taskNames[i]).filter(Boolean);
+ const remaining=taskNames.filter((t,i)=>!(u.done||[]).includes(i));
+ const percent=extend().acceptance?.[id]||'Not estimated';
+ return '<div class="card" style="padding:24px"><div class="row"><div><h2>'+escapeHTML(u.name)+'</h2><p>'+escapeHTML(u.program)+'</p></div><div class="top-actions"><button class="btn" data-select="'+escapeHTML(id)+'">Resume workspace →</button>'+(u.portal?'<a class="btn secondary sm" href="'+escapeHTML(u.portal)+'" target="_blank" rel="noopener noreferrer">Open portal ↗</a>':'')+'</div></div><div class="top-actions"><span class="pill">Status: Started, not confirmed submitted</span><span class="pill">Deadline: '+escapeHTML(next(u).date||'Needs verification')+'</span><span class="pill">Previous estimate: '+escapeHTML(percent)+'</span></div>'+(id==='jhu'?'<p class="micro">The previous estimate was for JHU Data Science, not this CS application. It is not a trustworthy chance estimate.</p>':'<p class="micro">The previous estimate was for an AI Engineering program and may not apply to the actual WashU application.</p>')+'<div class="conv-panel"><div><h3>✓ Already worked on together</h3><ul class="conv-list">'+evidence[id].map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul></div><div><h3>○ Still needs confirmation / completion</h3><ul class="conv-list">'+pending[id].map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul></div></div><div class="conversation-evidence"><strong>Portal checklist:</strong> '+done.length+' marked complete · '+remaining.length+' unchecked. Discussed items above are not automatically checked.</div><div class="top-actions"><button class="btn secondary sm" data-checkresume="'+escapeHTML(id)+'">View checkboxes</button><button class="btn secondary sm" data-select="'+escapeHTML(id)+'">Continue SOP and notes</button></div></div>'
+ }).join('')+'</div><div class="card section"><h2>Considering other universities?</h2><p class="muted">All other programs remain in the Universities section, not here. Only Johns Hopkins and WashU are known from our conversation as applications already started.</p><button class="btn secondary sm" id="showallapps">View university shortlist</button></div>';
+}
+seedOnce();
+const nav=document.querySelector('[data-page="resume"]');
+if(nav)nav.textContent='↪ Resume started applications';
+const previousNavigate=navigate;
+navigate=function(p){if(p==='resume'){page='resume';document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('active',n.dataset.page==='resume'));document.getElementById('title').textContent='Resume started applications';document.getElementById('subtitle').textContent='Johns Hopkins and WashU — based on our conversations.';renderConversation()}else previousNavigate(p)};
+const oldRender=render;
+render=function(){if(page==='resume')renderConversation();else oldRender()};
+if(nav)nav.onclick=()=>navigate('resume');
+document.addEventListener('click',e=>{if(e.target.id==='goResume')navigate('resume')},true);
+if(page==='resume')renderConversation();
+})();
 </script></body></html>
