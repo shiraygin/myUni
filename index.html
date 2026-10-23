@@ -780,7 +780,7 @@ const options=[
 {title:'Option 2 — Engineering challenge in your community',description:'Identify an engineering problem affecting your local community and discuss actions you could take to address it.'}
 ];
 function install(){
-if(typeof page==='undefined'||page!=='essays'||typeof doc==='undefined')return;
+if(typeof page==='undefined'||page!=='essays')return;
 const uni=document.getElementById('essayUni');if(!uni||uni.value!=='jhu')return;
 const tab=document.getElementById('tabPersonal');if(!tab||tab.getAttribute('aria-selected')!=='true')return;
 const panel=document.querySelector('.essay-panel');if(!panel||panel.querySelector('#jhu-prompt-choice'))return;
