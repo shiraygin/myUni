@@ -535,4 +535,41 @@ const count=value==="sakura"?18:34;for(let i=0;i<count;i++){const span=document.
 select.onchange=()=>setEffect(select.value);setEffect(["sakura","rain","off"].includes(effects)?effects:"sakura");
 keep();
 })();
-</script></body></html>
+</script>
+<style id="myuni-contrast-background-fix">
+/* Background effects belong behind every reading and interaction surface. */
+html,body{min-height:100%;background:var(--page)}
+body{isolation:isolate}
+#myuni-weather{position:fixed!important;inset:0!important;z-index:0!important;pointer-events:none!important;overflow:hidden}
+.app{position:relative!important;z-index:1!important;background:transparent!important}
+.sidebar{position:relative;z-index:2;box-shadow:4px 0 24px #00000008}
+.main{position:relative;z-index:2}
+dialog{position:fixed;z-index:30}
+#myuni-weather .myuni-fall{opacity:.18!important}
+#myuni-weather .myuni-rain{opacity:.12!important}
+/* Reduce monotonous blocks: light warm panels, neutral surfaces, soft section hues. */
+html[data-theme="dark"]{--page:#171923;--side:#21212e;--surface:#242936;--surface2:#303647;--field:#1b2030;--line:#3b4355;--inputline:#657084;--text:#f3f2f6;--muted:#b6bfcd;--accent:#dec1ec;--accent-text:#271b30;--button2:#394053;--button2text:#f6f1fa;--navactive:#444454;--success:#9ae3c4;--warning:#f3cf90;--danger:#ffa3ad}
+html[data-theme="pink"]{--page:#241f2a;--side:#322735;--surface:#302d3a;--surface2:#403745;--field:#242630;--line:#534a5e;--inputline:#817386;--text:#faf5f8;--muted:#cdc2d0;--accent:#f2bdd6;--accent-text:#3f2738;--button2:#514253;--button2text:#fff1f8;--navactive:#5e495d;--success:#a8e4c6;--warning:#f6d29b;--danger:#ffb0ba}
+html[data-theme="light"]{--page:#f5f5f2;--side:#eae9ee;--surface:#ffffff;--surface2:#eef1f3;--field:#fdfdfb;--line:#d5dbe0;--inputline:#a9b2be;--text:#252b35;--muted:#647182;--accent:#745592;--accent-text:#fff;--button2:#ece7f1;--button2text:#3b3045;--navactive:#dcd8e4;--success:#227858;--warning:#996119;--danger:#ba4252}
+html[data-theme] .card,html[data-theme] .resume-calm-card,html[data-theme] .vault-card{box-shadow:0 5px 20px #00000009}
+html[data-theme] .card:nth-of-type(3n+2){background:color-mix(in srgb,var(--surface) 90%,#dceef2)}
+html[data-theme] .card:nth-of-type(3n+3){background:color-mix(in srgb,var(--surface) 91%,#f6e1d7)}
+html[data-theme] .resume-focus{background:color-mix(in srgb,var(--surface) 93%,#f1d7ac);border-color:color-mix(in srgb,var(--warning) 32%,var(--line))}
+html[data-theme] .resume-summary-box:nth-child(1){background:color-mix(in srgb,var(--surface) 87%,#cde8dd)}
+html[data-theme] .resume-summary-box:nth-child(2){background:color-mix(in srgb,var(--surface) 88%,#ded8ec)}
+html[data-theme] .resume-summary-box:nth-child(3){background:color-mix(in srgb,var(--surface) 88%,#d8e7f4)}
+html[data-theme] .resume-detail-col:first-child{background:color-mix(in srgb,var(--surface2) 90%,#bce6d7)}
+html[data-theme] .resume-detail-col:last-child{background:color-mix(in srgb,var(--surface2) 90%,#f6e0b7)}
+html[data-theme] .hint{background:color-mix(in srgb,var(--surface2) 92%,#d3deea);border-left-color:var(--accent)}
+html[data-theme] .zee-welcome{background:linear-gradient(125deg,color-mix(in srgb,var(--surface) 91%,#ecd8df),color-mix(in srgb,var(--surface2) 91%,#c7dee5))}
+html[data-theme] .stats .card:nth-child(4n+1){border-top:3px solid var(--accent)}
+html[data-theme] .stats .card:nth-child(4n+2){border-top:3px solid var(--success)}
+html[data-theme] .stats .card:nth-child(4n+3){border-top:3px solid var(--warning)}
+html[data-theme] .stats .card:nth-child(4n){border-top:3px solid #9dc6e2}
+html[data-theme] .nav.active{border-left:3px solid var(--accent)}
+html[data-theme] .resume-focus-num{color:#26212b}
+html[data-theme] .pill{background:var(--surface2);border:1px solid var(--line)}
+html[data-theme="light"] .zee-greeting{color:var(--text)}
+html[data-theme] .weather-controls{background:var(--surface);border-color:var(--line)}
+@media(prefers-reduced-motion:reduce){#myuni-weather{display:none!important}}
+</style></body></html>
