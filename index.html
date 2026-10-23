@@ -172,4 +172,72 @@ localStorage.setItem(key,theme);
 holder.addEventListener('click',e=>{const b=e.target.closest('[data-theme-choice]');if(b)apply(b.dataset.themeChoice)});
 apply(localStorage.getItem(key)||'dark');
 })();
+</script>
+<style id="zee-welcome-css">
+.zee-welcome{position:relative;overflow:hidden;border:1px solid var(--line,#42364e);background:linear-gradient(125deg,var(--surface2,#33293f),var(--surface,#272030));border-radius:22px;padding:clamp(20px,4vw,36px);margin:22px 0 18px}
+.zee-welcome:before{content:"✦";position:absolute;font-size:168px;right:18px;top:-65px;color:var(--accent,#d6b9f1);opacity:.09;pointer-events:none}
+.zee-welcome .zee-label{letter-spacing:2.5px;text-transform:uppercase;color:var(--muted,#ada4ba);font-size:10px;font-weight:700}
+.zee-welcome blockquote{margin:13px 0 26px;font:italic clamp(20px,3vw,33px)/1.35 Georgia,serif;max-width:760px;color:var(--text,#f4f0fa);position:relative;white-space:pre-line;transition:opacity .18s ease}
+.zee-welcome .zee-hello{font:normal clamp(29px,4vw,45px) Georgia,serif;letter-spacing:-1px;color:var(--text,#f4f0fa);margin:0 0 8px}
+.zee-welcome .zee-foot{color:var(--muted,#ada4ba);line-height:1.6;max-width:550px}
+.zee-welcome .zee-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}
+.zee-welcome .zee-next{border-radius:30px;background:var(--accent,#d6b9f1);color:var(--accent-text,#24182f);padding:8px 14px;border:0;font-weight:700}
+.zee-welcome .zee-edit{border:1px solid var(--line,#42364e);background:var(--button2,#3c3048);color:var(--button2text,#f5eefa);border-radius:30px;padding:8px 14px}
+.zee-welcome .zee-note{font-size:11px;color:var(--muted,#ada4ba)}
+.zee-quote-manager{border-top:1px solid var(--line,#42364e);padding-top:14px;margin-top:18px}
+.zee-quote-manager textarea{min-height:90px}
+</style>
+<script>
+(function(){
+const KEY='myuni-welcome-quotes-v1';
+const defaultQuotes=[
+"When there is desire, there's gonna be a flame.",
+"One thing at a time. That is enough.",
+"You are allowed to be a beginner at something new.",
+"Small steps still move you forward.",
+"You don't have to have it all figured out today.",
+"Progress doesn't have to be loud to be real.",
+"You can be uncertain and still keep going.",
+"Rest is part of the journey, not a detour.",
+"Your pace is still a pace.",
+"Not every answer needs to arrive today.",
+"Some beautiful things take longer to grow.",
+"There's room for you to change your mind.",
+"The next step matters more than the perfect plan.",
+"You don't need to earn your right to pause.",
+"You've already made it through so many unknowns.",
+"A little courage counts, too.",
+"Keep the wonder. Leave the pressure.",
+"Your future isn't a race against anyone else's.",
+"Even slow mornings can become good days.",
+"You can do difficult things gently."
+];
+let quotes;
+try{const saved=JSON.parse(localStorage.getItem(KEY));quotes=Array.isArray(saved)?saved.filter(q=>typeof q==='string'&&q.trim()).slice(0,100):[]}catch{quotes=[]}
+let last=-1,showManager=false;
+function pick(){const all=[...defaultQuotes,...quotes];if(all.length===1)return all[0];let i=Math.floor(Math.random()*(all.length-1));if(i>=last)i++;last=i;return all[i]}
+let current=pick();
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const renderBefore=render;
+render=function(){
+renderBefore();
+if(page!=='home')return;
+const view=document.getElementById('view');if(!view)return;
+const panel=document.createElement('section');panel.className='zee-welcome';panel.setAttribute('aria-label','A little encouragement for Zee');
+panel.innerHTML='<div class="zee-label">A little something for you</div><blockquote id="zee-quote">'+esc(current)+'</blockquote><h2 class="zee-hello">Hello, Zee ♡</h2><div class="zee-foot">You don’t have to figure out every university today. Just choose one small thing when you’re ready.</div><div class="zee-actions"><button type="button" class="zee-next" id="zee-another">↻ Another thought</button><button type="button" class="zee-edit" id="zee-customize">♡ My own quotes</button><span class="zee-note">A different thought every time you open myUni.</span></div><div id="zee-manager" '+(showManager?'':'hidden')+' class="zee-quote-manager"><label for="zee-custom-quote">Add a sentence you want to see again</label><textarea id="zee-custom-quote" maxlength="300" placeholder="Write something kind to your future self..."></textarea><div class="zee-actions"><button type="button" class="zee-next" id="zee-save-quote">Save this thought</button><span class="zee-note" id="zee-added">'+quotes.length+' personal quotes saved on this device.</span></div></div>';
+view.prepend(panel);
+};
+document.addEventListener('click',e=>{
+if(e.target.id==='zee-another'){current=pick();const q=document.getElementById('zee-quote');if(q)q.textContent=current}
+if(e.target.id==='zee-customize'){showManager=!showManager;const m=document.getElementById('zee-manager');if(m)m.hidden=!showManager}
+if(e.target.id==='zee-save-quote'){
+const input=document.getElementById('zee-custom-quote');const value=input?.value.trim();
+if(!value)return;
+if(quotes.length>=100){alert('You can keep up to 100 personal thoughts here.');return}
+quotes.push(value);localStorage.setItem(KEY,JSON.stringify(quotes));current=value;
+document.getElementById('zee-quote').textContent=current;input.value='';document.getElementById('zee-added').textContent=quotes.length+' personal quotes saved on this device.';
+}
+});
+render();
+})();
 </script></body></html>
