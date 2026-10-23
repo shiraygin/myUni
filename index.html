@@ -402,4 +402,44 @@ if(nav)nav.onclick=()=>navigate('resume');
 document.addEventListener('click',e=>{if(e.target.id==='goResume')navigate('resume')},true);
 if(page==='resume')renderConversation();
 })();
+</script>
+<style id="resume-calm-style">
+.resume-calm{display:grid;gap:16px}.resume-calm-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:24px}.resume-heading{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}.resume-heading h2{margin:0 0 5px;font-size:27px}.resume-major{color:var(--muted);margin:0}.resume-status-line{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.resume-status{font-weight:650;font-size:12px;border-radius:8px;padding:8px 11px;background:var(--surface2)}.resume-status.urgent{color:var(--danger);background:color-mix(in srgb,var(--danger) 13%,var(--surface))}.resume-status.pending{color:var(--warning);background:color-mix(in srgb,var(--warning) 13%,var(--surface))}.resume-status.ok{color:var(--success);background:color-mix(in srgb,var(--success) 12%,var(--surface))}.resume-focus{background:color-mix(in srgb,var(--warning) 7%,var(--surface));border:1px solid color-mix(in srgb,var(--warning) 30%,var(--line));border-radius:14px;padding:17px;margin:18px 0}.resume-focus h3{color:var(--warning);font:700 12px system-ui;margin:0 0 10px;letter-spacing:.8px;text-transform:uppercase}.resume-focus-line{display:flex;align-items:flex-start;gap:12px;margin:9px 0;font-size:14px;line-height:1.4}.resume-focus-num{background:var(--warning);color:var(--page);border-radius:7px;padding:3px 8px;min-width:25px;text-align:center;font-weight:800;font-size:12px;flex-shrink:0}.resume-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}.resume-summary-box{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface2)}.resume-summary-box b{font-size:21px;display:block;margin:4px 0}.resume-summary-box .micro{letter-spacing:.2px}.resume-details{margin-top:13px;border-top:1px solid var(--line);padding-top:13px}.resume-details summary{cursor:pointer;color:var(--accent);font-weight:650;padding:9px 0;list-style:none;display:flex;justify-content:space-between}.resume-details summary::-webkit-details-marker{display:none}.resume-details summary:after{content:"＋";font-size:18px}.resume-details[open] summary:after{content:"−"}.resume-detail-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}.resume-detail-col{background:var(--surface2);border-radius:13px;padding:15px}.resume-detail-col h4{margin:0 0 11px;font-size:14px}.resume-bullets{list-style:none;padding:0;margin:0}.resume-bullets li{position:relative;padding:9px 0 9px 22px;font-size:13px;line-height:1.5;border-bottom:1px solid var(--line)}.resume-bullets li:last-child{border:0}.resume-bullets li:before{position:absolute;left:0;top:10px;content:"•";color:var(--accent)}.resume-bullets.done li:before{content:"✓";color:var(--success)}.resume-bullets.todo li:before{content:"○";color:var(--warning)}.resume-tiny-note{font-size:12px;color:var(--muted);line-height:1.5;margin:9px 0}.resume-controls{display:flex;flex-wrap:wrap;gap:9px;margin:16px 0 0}.resume-calm-card .btn{font-size:12px}.resume-calm .pill{font-size:11px}.resume-more-note{margin:14px 0;padding:12px;border-radius:10px;color:var(--muted);background:var(--surface2);font-size:12px;line-height:1.55}
+@media(max-width:800px){.resume-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.resume-detail-cols{grid-template-columns:1fr}.resume-calm-card{padding:17px}}
+</style>
+<script id="resume-calm-script">
+(function(){
+ const ids=['jhu','washu'];
+ const finished={
+ jhu:['Chose Computer Science (AI interest)','Reviewed courses and background','Prepared MOI certificate request','Reviewed essay and reference requirements'],
+ washu:['Started McKelvey application','Filled out academic-history guidance','Mapped prerequisite courses','Drafted KACST research-experience text']
+ };
+ const nextSteps={
+ jhu:['Write and tailor your SOP','Check the English-waiver decision','Check recommendations and uploads'],
+ washu:['Confirm your exact program','Finish the KACST research fields','Confirm English requirement']
+ };
+ const details={
+ jhu:{done:['MSE Computer Science selected; Artificial Intelligence area of interest.','MOI certificate request drafted and sent to the university.','Academic prerequisites and employment entries discussed.','SOP, recommendations and optional personal statement requirements reviewed.'],todo:['Finish SOP (maximum 1,000 words).','Decide on optional personal statement and work sample.','Check MOI waiver approval or English test.','Check recommendation invitations and uploaded documents.','Review application and submit; save confirmation.']},
+ washu:{done:['McKelvey School of Engineering application started.','Academic history and equivalent courses mapped.','KACST mentor and research experience wording drafted.','English proficiency and employment entries discussed.'],todo:['Confirm exact degree and 2027 deadline.','Fill real KACST hours/week and compensation.','Confirm English test or exemption.','Complete SOP, references and required uploads.','Submit and save confirmation.']}
+ };
+ function h(x){return String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[ch]))}
+ function list(a,cls){return '<ul class="resume-bullets '+cls+'">'+a.map(x=>'<li>'+h(x)+'</li>').join('')+'</ul>'}
+ function renderCalm(){
+  const root=document.getElementById('view');if(!root)return;
+  const current=ids.map(id=>data.unis.find(u=>u.id===id)).filter(Boolean);
+  root.innerHTML='<div class="resume-more-note"><strong>Just two applications.</strong> Focus on the next three steps. Open details only when you need them. “Worked on” means we discussed it here, not that the portal confirmed it.</div><div class="resume-calm">'+current.map(u=>{
+   const id=u.id,checked=(u.done||[]).length,rate=data.extra?.acceptance?.[id]||({jhu:'45–60%',washu:'40–55%'}[id]),deadline=next(u).date||'TBD';
+   return '<section class="resume-calm-card"><div class="resume-heading"><div><h2>'+h(u.name)+'</h2><p class="resume-major">'+h(u.program)+'</p></div><div class="resume-controls"><button class="btn" data-select="'+h(id)+'">Continue application →</button>'+(u.portal?'<a class="btn secondary" href="'+h(u.portal)+'" target="_blank" rel="noopener">Open portal ↗</a>':'')+'</div></div>'+
+   '<div class="resume-status-line"><span class="resume-status pending">◷ In progress</span><span class="resume-status '+(u.verified==='yes'?'ok':'pending')+'">Deadline: '+h(deadline)+(u.verified==='yes'?'':' · Verify')+'</span><span class="resume-status">Previous estimate: '+h(rate)+'</span></div>'+
+   '<div class="resume-focus"><h3>Focus on these 3 things</h3>'+nextSteps[id].map((x,i)=>'<div class="resume-focus-line"><span class="resume-focus-num">'+(i+1)+'</span><span>'+h(x)+'</span></div>').join('')+'</div>'+
+   '<div class="resume-summary"><div class="resume-summary-box"><span class="micro">Already discussed</span><b style="color:var(--success)">'+finished[id].length+'</b><span class="micro">topics</span></div><div class="resume-summary-box"><span class="micro">Portal checklist</span><b>'+checked+' / '+taskNames.length+'</b><span class="micro">checked by you</span></div><div class="resume-summary-box"><span class="micro">Deadline countdown</span><b>'+countdown(u)+'</b><span class="micro">'+(u.verified==='yes'?'Date marked verified':'Needs verification')+'</span></div></div>'+
+   '<details class="resume-details"><summary>Show full progress & remaining tasks</summary><div class="resume-detail-cols"><div class="resume-detail-col"><h4 style="color:var(--success)">✓ Worked on together</h4>'+list(details[id].done,'done')+'</div><div class="resume-detail-col"><h4 style="color:var(--warning)">○ Still to check or finish</h4>'+list(details[id].todo,'todo')+'</div></div><div class="resume-more-note">Previous acceptance estimate is not an official or individualized probability; estimates may refer to another major. Portal tasks are not marked complete automatically.</div><button class="btn secondary sm" data-checkresume="'+h(id)+'">Open detailed checklist →</button></details>'+
+   '</section>'
+  }).join('')+'</div><div class="resume-more-note">Other universities are kept under <strong>Universities</strong> until you actually start applying.</div>';
+ }
+ const prev=navigate;navigate=function(p){prev(p);if(p==='resume')renderCalm()};
+ const navigation=document.querySelector('[data-page="resume"]');if(navigation)navigation.onclick=()=>navigate('resume');
+ document.addEventListener('click',e=>{if(e.target.closest('#goResume'))setTimeout(()=>{if(page==='resume')renderCalm()},0)},true);
+ if(page==='resume')renderCalm();
+})();
 </script></body></html>
