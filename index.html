@@ -709,4 +709,56 @@ saveCal();
 .resume-calm-card .resume-major::before{content:"MAJOR";font-size:10px;letter-spacing:1.3px;color:var(--accent);margin-right:11px;font-weight:900}
 html[data-theme="light"] .resume-calm-card .resume-major::before{color:#674280}
 @media(max-width:550px){.resume-calm-card .resume-major{font-size:13px;flex-wrap:wrap;gap:4px}}
-</style></body></html>
+</style>
+<style id="essay-studio-style">
+.essay-hero{border:1px solid var(--line);background:var(--surface);border-radius:17px;padding:20px;margin:17px 0}
+.essay-picker{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:12px}
+.essay-panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:14px}
+.essay-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}
+.essay-tabs button{border:1px solid var(--line);border-radius:10px;padding:10px 16px;background:var(--button2);color:var(--button2text);cursor:pointer}
+.essay-tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-text);font-weight:700}
+.essay-two{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.essay-field{margin:13px 0}.essay-field label{display:block;margin-bottom:6px;font-weight:600}
+.essay-editor{min-height:350px;line-height:1.7;font-size:14px}
+.essay-topics{display:flex;gap:7px;flex-wrap:wrap}.essay-topic{background:var(--surface2);color:var(--text);border:1px solid var(--line);padding:7px 10px;border-radius:9px;font-size:12px}
+.essay-pills{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.essay-pill{background:var(--surface2);border-radius:9px;padding:7px 10px;font-size:12px}
+.essay-help{border-left:3px solid var(--accent);padding:12px;background:var(--surface2);color:var(--muted);border-radius:7px;font-size:12px}
+@media(max-width:780px){.essay-picker,.essay-two{grid-template-columns:1fr}.essay-editor{min-height:270px}}
+</style>
+<script id="essay-studio-script">
+(function(){
+ const $=id=>document.getElementById(id);
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const nav=document.createElement('button');nav.className='nav';nav.dataset.page='essays';nav.textContent='✎ SOP & Personal Statements';
+ document.querySelector('[data-page="writing"]').after(nav);
+ const storedKey='myuni-essay-studio-v1';
+ let drafts={};try{drafts=JSON.parse(localStorage.getItem(storedKey))||{}}catch{}
+ let chosen=data.unis[0]?.id||'',doc='sop';
+ const saveDrafts=()=>localStorage.setItem(storedKey,JSON.stringify(drafts));
+ const currentUni=()=>data.unis.find(u=>u.id===chosen)||data.unis[0];
+ const slug=u=>u.id+'::'+(u.program||'undecided').trim().toLowerCase();
+ const starter=(u)=>({sop:'',personal:'',sopPrompt:'',personalPrompt:'',sopTopics:'academic preparation\nresearch experiences\nwhy this program\ncareer goals',personalTopics:'personal experience\nreflection\ncommunity contribution',sopLimit:'',personalLimit:'',sopRequirement:'unknown',personalRequirement:'unknown',lastEdited:''});
+ function getDraft(u){const id=slug(u);if(!drafts[id]){drafts[id]=starter(u);const previous=data.extra?.workspaces?.[u.id];if(previous){drafts[id].sop=previous.sop||'';drafts[id].personal=previous.personal||'';drafts[id].sopPrompt=previous.promptSop||'';drafts[id].personalPrompt=previous.promptPersonal||'';drafts[id].sopLimit=previous.sopLimit||'';drafts[id].personalLimit=previous.psLimit||'';}saveDrafts()}return drafts[id]}
+ const count=t=>t.trim()?t.trim().split(/\s+/).length:0;
+ function view(){
+ const u=currentUni();if(!u)return;
+ const d=getDraft(u),prefix=doc==='sop'?'sop':'personal',label=doc==='sop'?'Statement of Purpose':'Personal Statement',topics=(d[prefix+'Topics']||'').split('\n').filter(Boolean),limit=Number(d[prefix+'Limit']||0),words=count(d[prefix]);
+ $('view').innerHTML='<div class="hint"><strong>One university + one program = one essay workspace.</strong> If you change the major, the new program gets its own draft. Earlier drafts are preserved. Official prompts must be copied from each admission portal; suggested topics are planning guidance, not university requirements.</div>'+
+ '<div class="essay-hero"><div class="essay-picker"><div><label>UNIVERSITY</label><select id="essayUni">'+data.unis.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===u.id?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select></div><div><label>SELECTED MAJOR / PROGRAM</label><input id="essayMajor" value="'+esc(u.program)+'" aria-label="Program name"></div></div><div class="essay-pills"><span class="essay-pill">University: '+esc(u.name)+'</span><span class="essay-pill">Major: <strong>'+esc(u.program)+'</strong></span><span class="essay-pill">Separate program draft</span></div><div class="actions"><button class="btn secondary sm" id="saveEssayMajor">Save program choice</button><button class="btn secondary sm" id="essayOpenEditor">Edit university information</button></div><p class="micro">Changing this program label creates a separate draft when you save. Previous program drafts remain available by changing the program label back.</p></div>'+
+ '<div class="essay-panel"><div class="essay-tabs"><button id="tabSOP" aria-selected="'+(doc==='sop')+'">SOP</button><button id="tabPersonal" aria-selected="'+(doc==='personal')+'">Personal Statement</button></div><div class="essay-two"><div><div class="essay-field"><label>'+label+' requirement</label><select data-essay="'+prefix+'Requirement">'+['unknown','required','optional','not required'].map(v=>'<option value="'+v+'" '+(d[prefix+'Requirement']===v?'selected':'')+'>'+v+'</option>').join('')+'</select></div><div class="essay-field"><label>Official university prompt</label><textarea data-essay="'+prefix+'Prompt" rows="4" placeholder="Paste the exact prompt from the admissions portal...">'+esc(d[prefix+'Prompt'])+'</textarea></div></div><div><div class="essay-field"><label>Topics / points I want to cover (one per line)</label><textarea data-essay="'+prefix+'Topics" rows="5">'+esc(d[prefix+'Topics'])+'</textarea></div><div class="essay-topics">'+topics.map(t=>'<span class="essay-topic">'+esc(t)+'</span>').join('')+'</div></div></div><div class="essay-field"><label>My '+label+' draft</label><textarea class="essay-editor" data-essay="'+prefix+'" placeholder="Start writing here. This draft is unique to '+esc(u.name)+' — '+esc(u.program)+'.">'+esc(d[prefix])+'</textarea></div><div class="row"><div class="essay-pills"><span class="essay-pill"><strong id="essayWordCount">'+words+'</strong> words</span><span class="essay-pill" id="essayLimitFeedback">'+(limit?'Limit: '+limit+' words': 'No word limit recorded')+'</span><span class="essay-pill" id="essaySaved">Stored locally</span></div><div class="actions"><button class="btn secondary sm" id="copyEssay">Copy draft</button><button class="btn secondary sm" id="downloadEssay">Download .txt</button></div></div><div class="essay-field" style="max-width:260px"><label>Word limit (if provided)</label><input type="number" min="0" placeholder="Leave blank if unknown" data-essay="'+prefix+'Limit" value="'+esc(d[prefix+'Limit'])+'"></div><div class="essay-help">SOP: academic preparation → specific work → intellectual interests → why this particular program → future goals. Personal Statement: genuine experience → what it taught you → how you will contribute. Use each school’s exact prompt to decide what belongs.</div></div>';
+ }
+ const original=navigate;navigate=function(p){original(p);if(p==='essays'){page='essays';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===p));$('title').textContent='Essay Studio';$('subtitle').textContent='Different major, different university, different draft.';view()}};
+ nav.onclick=()=>navigate('essays');
+ document.addEventListener('click',async e=>{
+ if(page!=='essays')return;
+ if(e.target.id==='tabSOP'){doc='sop';view()}
+ if(e.target.id==='tabPersonal'){doc='personal';view()}
+ if(e.target.id==='essayOpenEditor'){edit(currentUni().id)}
+ if(e.target.id==='saveEssayMajor'){const u=currentUni(),m=$('essayMajor').value.trim();if(m&&m!==u.program){u.program=m;save();view()}else if(!m)alert('Enter a program name first.')}
+ if(e.target.id==='copyEssay'){const value=getDraft(currentUni())[doc]||'';try{await navigator.clipboard.writeText(value)}catch{const t=document.createElement('textarea');t.value=value;document.body.append(t);t.select();document.execCommand('copy');t.remove()}}
+ if(e.target.id==='downloadEssay'){const u=currentUni(),text=getDraft(u)[doc]||'',b=new Blob([text],{type:'text/plain;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(u.id+'-'+u.program+'-'+doc).replace(/[^a-z0-9-]+/gi,'-')+'.txt';a.click();URL.revokeObjectURL(a.href)}
+ });
+ document.addEventListener('change',e=>{if(page==='essays'&&e.target.id==='essayUni'){chosen=e.target.value;view()}});
+ document.addEventListener('input',e=>{if(page!=='essays'||!e.target.dataset.essay)return;const d=getDraft(currentUni());d[e.target.dataset.essay]=e.target.value;d.lastEdited=new Date().toISOString();saveDrafts();const c=$('essayWordCount');if(c&&e.target.dataset.essay===doc)c.textContent=count(e.target.value);const t=$('essaySaved');if(t)t.textContent='Saved locally'});
+})();
+</script></body></html>
