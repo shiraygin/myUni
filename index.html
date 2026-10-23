@@ -116,4 +116,60 @@ document.addEventListener('input',e=>{if(e.target.dataset.rate){extend().accepta
 document.addEventListener('change',e=>{if(e.target.dataset.resumefield){record(data.unis.find(u=>u.id===e.target.dataset.rid))[e.target.dataset.resumefield]=e.target.value;save()}});
 extend();save();render();
 })();
+</script>
+<style id="theme-styles">
+:root{--page:#17131f;--side:#221b2d;--surface:#272030;--surface2:#33293f;--field:#17121e;--line:#42364e;--inputline:#62516f;--text:#f4f0fa;--muted:#ada4ba;--accent:#d6b9f1;--accent-text:#24182f;--button2:#3c3048;--button2text:#f5eefa;--navactive:#463555;--success:#90dcbc;--warning:#ffd08e;--danger:#ff91a3}
+html[data-theme="pink"]{--page:#2d1829;--side:#3b2034;--surface:#43273e;--surface2:#543049;--field:#2e1b2d;--line:#704b65;--inputline:#956a87;--text:#fff2fa;--muted:#e0bcd4;--accent:#ffb9d9;--accent-text:#422035;--button2:#643b58;--button2text:#fff1fa;--navactive:#73445e;--success:#a9e8c0;--warning:#ffe19a;--danger:#ffa4b4}
+html[data-theme="light"]{--page:#faf7fc;--side:#f1eafa;--surface:#ffffff;--surface2:#f3eafa;--field:#fff;--line:#dbd0e3;--inputline:#b7a5c2;--text:#2c2036;--muted:#695d73;--accent:#76539b;--accent-text:#ffffff;--button2:#eee5f5;--button2text:#423050;--navactive:#e0cfec;--success:#176a49;--warning:#98601b;--danger:#b93450}
+html[data-theme] {color-scheme:dark}
+html[data-theme="light"]{color-scheme:light}
+html[data-theme] body{background:var(--page);color:var(--text)}
+html[data-theme] .sidebar{background:var(--side);border-color:var(--line)}
+html[data-theme] .card,html[data-theme] dialog,html[data-theme] .resume-item{background:var(--surface);border-color:var(--line);color:var(--text)}
+html[data-theme] .hint{background:var(--surface2);border-color:var(--accent)}
+html[data-theme] .nav{color:var(--muted)}
+html[data-theme] .nav.active,html[data-theme] .nav:hover{background:var(--navactive);color:var(--text)}
+html[data-theme] .brand{color:var(--accent)}
+html[data-theme] .brand i{color:var(--success)}
+html[data-theme] .btn{background:var(--accent);color:var(--accent-text)}
+html[data-theme] .btn.secondary{background:var(--button2);color:var(--button2text);border-color:var(--line)}
+html[data-theme] .btn.danger{background:#883a52;color:#fff}
+html[data-theme] input,html[data-theme] select,html[data-theme] textarea{background:var(--field);border-color:var(--inputline);color:var(--text)}
+html[data-theme] .muted,html[data-theme] .micro,html[data-theme] .footer,html[data-theme] .small,html[data-theme] label{color:var(--muted)}
+html[data-theme] .pill,html[data-theme] .mini-tag,html[data-theme] .task-chip{background:var(--surface2);color:var(--text)}
+html[data-theme] .mini-tag.warn,html[data-theme] .task-chip.todo{background:color-mix(in srgb,var(--warning) 17%,var(--surface));color:var(--warning)}
+html[data-theme] .mini-tag.bad{background:color-mix(in srgb,var(--danger) 17%,var(--surface));color:var(--danger)}
+html[data-theme] .mini-tag.good,html[data-theme] .task-chip.done{background:color-mix(in srgb,var(--success) 17%,var(--surface));color:var(--success)}
+html[data-theme] .red{color:var(--danger)}
+html[data-theme] .amber{color:var(--warning)}
+html[data-theme] .green{color:var(--success)}
+html[data-theme] .bar{background:var(--line)}
+html[data-theme] .bar span{background:var(--accent)}
+html[data-theme] .copyline,html[data-theme] .check,html[data-theme] .entry{border-color:var(--line)}
+html[data-theme] .eyebrow,html[data-theme] .estimate{color:var(--accent)}
+html[data-theme] a:not(.btn){color:var(--accent)}
+html[data-theme="light"] .eyebrow,html[data-theme="light"] .estimate{color:#764b94}
+.theme-switcher{margin:18px 0 8px;padding:12px 9px;border:1px solid var(--line);border-radius:13px}
+.theme-title{font-size:11px;letter-spacing:1.4px;color:var(--muted);padding-bottom:9px}
+.theme-options{display:flex;gap:5px}
+.theme-option{background:var(--button2);color:var(--button2text);border:1px solid var(--line);border-radius:9px;padding:8px 7px;flex:1;min-width:0;font-size:11px}
+.theme-option[aria-pressed="true"]{background:var(--accent);color:var(--accent-text);font-weight:700}
+.theme-option:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+<script>
+(function(){
+const key='myuni-theme';
+const sidebar=document.querySelector('.sidebar');
+const holder=document.createElement('div');holder.className='theme-switcher';
+holder.innerHTML='<div class="theme-title">COLOR MODE</div><div class="theme-options"><button type="button" class="theme-option" data-theme-choice="dark">☾ Dark</button><button type="button" class="theme-option" data-theme-choice="pink">♥ Pink</button><button type="button" class="theme-option" data-theme-choice="light">☀ Light</button></div>';
+sidebar.insertBefore(holder,sidebar.querySelector('.nav'));
+function apply(theme){
+if(!['dark','pink','light'].includes(theme))theme='dark';
+document.documentElement.dataset.theme=theme;
+holder.querySelectorAll('[data-theme-choice]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.themeChoice===theme)));
+localStorage.setItem(key,theme);
+}
+holder.addEventListener('click',e=>{const b=e.target.closest('[data-theme-choice]');if(b)apply(b.dataset.themeChoice)});
+apply(localStorage.getItem(key)||'dark');
+})();
 </script></body></html>
