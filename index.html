@@ -615,4 +615,93 @@ document.addEventListener('change',e=>{if(e.target.dataset.inv){const x=inventor
 document.addEventListener('click',e=>{const id=e.target.dataset.editinv;if(id){const x=inventory.find(d=>d.id===id);const v=prompt('Edit note for '+x.name,x.note||'');if(v!==null){x.note=v;saveInv();renderInventory()}}if(e.target.id==='addInventory'){const name=prompt('What do you want to track?');if(name?.trim()){inventory.push({id:'custom-'+Date.now(),name:name.trim(),status:'missing',note:''});saveInv();renderInventory()}}});
 saveInv();if(page==='inventory')renderInventory();
 })();
+</script>
+<style id="deadline-calendar-style">
+.calendar-wrap{display:grid;gap:16px}
+.calendar-months{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:5px}
+.calendar-month{border:1px solid var(--line);border-radius:9px;background:var(--surface);padding:10px 3px;color:var(--muted);text-align:center;font-size:11px;cursor:pointer;min-width:0}
+.calendar-month.active{border:2px solid var(--accent);color:var(--text);background:var(--surface2);font-weight:800}
+.calendar-month .dot{display:block;width:5px;height:5px;border-radius:50%;background:var(--warning);margin:5px auto 0;opacity:0}
+.calendar-month.has-events .dot{opacity:1}
+.calendar-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px}
+.calendar-month-title{font:500 28px Georgia,serif;margin:0}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-top:15px}
+.calendar-dow{text-align:center;font-size:11px;color:var(--muted);padding:7px 0}
+.calendar-cell{min-height:90px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 6px;min-width:0;overflow:hidden}
+.calendar-cell.today{outline:2px solid var(--accent);outline-offset:-2px}
+.calendar-cell.blank{opacity:.22;background:var(--surface2)}
+.calendar-number{font-size:12px;color:var(--muted);font-weight:700}
+.calendar-label{display:block;text-align:left;margin:5px 0 0;border:0;border-left:3px solid;padding:5px 4px;border-radius:4px;font-size:10px;line-height:1.2;width:100%;white-space:normal;overflow-wrap:anywhere}
+.calendar-label.verified{background:color-mix(in srgb,var(--success) 16%,var(--surface));color:var(--success);border-color:var(--success)}
+.calendar-label.unverified{background:color-mix(in srgb,var(--warning) 17%,var(--surface));color:var(--warning);border-color:var(--warning)}
+.calendar-label.ielts{background:color-mix(in srgb,#8daeea 18%,var(--surface));color:color-mix(in srgb,#8daeea 80%,var(--text));border-color:#8daeea}
+.calendar-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.calendar-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.calendar-legend span:before{content:"";width:9px;height:9px;background:var(--success);display:inline-block;border-radius:2px;margin-right:7px}
+.calendar-legend span:nth-child(2):before{background:var(--warning)}
+.calendar-legend span:nth-child(3):before{background:#8daeea}
+.calendar-event-list{display:grid;gap:9px}
+.calendar-event-row{display:grid;grid-template-columns:100px 1fr auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px}
+.calendar-event-row strong{font-size:13px}
+.calendar-event-row small{display:block;margin-top:3px;color:var(--muted)}
+.calendar-quick{padding:15px;background:var(--surface);border:1px solid var(--line);border-radius:13px}
+.calendar-month-memory{font-size:12px;color:var(--muted);line-height:1.5;margin:7px 0 0}
+@media(max-width:1000px){.calendar-months{grid-template-columns:repeat(6,1fr)}}
+@media(max-width:600px){.calendar-months{grid-template-columns:repeat(4,1fr)}.calendar-cell{min-height:66px;padding:5px 3px}.calendar-label{font-size:9px;padding:3px 2px}.calendar-event-row{grid-template-columns:75px 1fr}.calendar-event-row button{grid-column:2}.calendar-number{font-size:11px}}
+</style>
+<script id="deadline-calendar-script">
+(function(){
+const KEY="myuni-calendar-v1",months=["January","February","March","April","May","June","July","August","September","October","November","December"];
+let state;try{state=JSON.parse(localStorage.getItem(KEY))}catch{}
+if(!state||typeof state!=="object")state={year:2026,month:9,ieltsDate:"2026-11-28",ieltsBooked:false};
+if(!state.ieltsDate)state.ieltsDate="2026-11-28";
+const saveCal=()=>localStorage.setItem(KEY,JSON.stringify(state));
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const nav=document.createElement("button");nav.className="nav";nav.dataset.page="calendar";nav.textContent="▦ Deadline calendar";
+const ref=document.querySelector('[data-page="deadlines"]');ref.after(nav);
+function events(){
+const arr=[];
+for(const u of data.unis){
+if(u.status==="closed")continue;
+if(u.priority)arr.push({date:u.priority,title:u.name,description:"Priority • "+u.program,verified:u.verified==="yes",uid:u.id});
+if(u.deadline)arr.push({date:u.deadline,title:u.name,description:"Final • "+u.program,verified:u.verified==="yes",uid:u.id});
+}
+if(state.ieltsDate)arr.push({date:state.ieltsDate,title:"IELTS Academic",description:state.ieltsBooked?"Booked test date":"Personal target — not booked",ielts:true});
+return arr.sort((a,b)=>a.date.localeCompare(b.date))
+}
+const badge=e=>e.ielts?"ielts":e.verified?"verified":"unverified";
+function cal(){
+const root=document.getElementById("view");const ev=events(),month=state.month,year=state.year,mm=String(month+1).padStart(2,"0");
+const day1=new Date(year,month,1).getDay(),total=new Date(year,month+1,0).getDate();
+const byDate={};for(const e of ev)(byDate[e.date]??=[]).push(e);
+const days=Array.from({length:Math.ceil((day1+total)/7)*7},(_,i)=>{
+const day=i-day1+1;if(day<1||day>total)return '<div class="calendar-cell blank"></div>';
+const key=year+"-"+mm+"-"+String(day).padStart(2,"0"),items=byDate[key]||[],today=new Date().toLocaleDateString("en-CA")===key;
+return '<div class="calendar-cell '+(today?'today':'')+'"><span class="calendar-number">'+day+'</span>'+items.map(e=>'<button class="calendar-label '+badge(e)+'" type="button" title="'+esc(e.title+": "+e.description)+'" data-event="'+(e.ielts?"ielts":esc(e.uid))+'">'+esc(e.ielts?"IELTS · Target":e.title.replace("University","").trim())+'</button>').join("")+'</div>'
+}).join("");
+const monthEvents=ev.filter(e=>e.date.startsWith(year+"-"+mm));
+root.innerHTML='<div class="hint">A visual timeline, so you never have to remember the order of months. <strong>Green = dates marked verified, amber = dates to verify, blue = your IELTS plan.</strong> Double-check all official deadlines in the university\'s time zone.</div>'+
+'<div class="calendar-quick"><div class="calendar-head"><div><h2 class="calendar-month-title">Your year, at a glance</h2><p class="calendar-month-memory">January → February → March → April → May → June → July → August → September → October → November → December</p></div><div class="calendar-controls"><button class="btn secondary sm" id="calPrevYear">← Year</button><strong>'+year+'</strong><button class="btn secondary sm" id="calNextYear">Year →</button></div></div><div class="calendar-months">'+months.map((m,i)=>'<button type="button" class="calendar-month '+(i===month?'active':'')+' '+(ev.some(e=>e.date.startsWith(year+"-"+String(i+1).padStart(2,"0")))?"has-events":"")+'" data-calmonth="'+i+'"><span>'+m.slice(0,3)+'</span><span class="dot"></span></button>').join("")+'</div></div>'+
+'<div class="card"><div class="calendar-head"><h2 class="calendar-month-title">'+months[month]+' '+year+'</h2><div class="calendar-controls"><button class="btn secondary sm" id="calPrev">← Previous</button><button class="btn secondary sm" id="calToday">Today</button><button class="btn secondary sm" id="calNext">Next →</button></div></div><div class="calendar-legend"><span>Verified deadline</span><span>Needs verification</span><span>IELTS plan</span></div><div class="calendar-grid">'+["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d=>'<div class="calendar-dow">'+d+'</div>').join("")+days+'</div></div>'+
+'<div class="card"><div class="row"><div><h2>IELTS Academic</h2><p class="muted small">Planning target, not a university-imposed IELTS deadline.</p></div><span class="mini-tag '+(state.ieltsBooked?"good":"warn")+'">'+(state.ieltsBooked?"Booked (self-marked)":"Not booked")+'</span></div><div class="form"><div><label>My target exam date</label><input type="date" id="ieltsCalDate" value="'+esc(state.ieltsDate)+'"></div><div><label>Booking status</label><select id="ieltsBooked"><option value="no" '+(!state.ieltsBooked?"selected":"")+'>Planning only</option><option value="yes" '+(state.ieltsBooked?"selected":"")+'>Booked — I confirmed it</option></select></div></div><p class="muted small">Suggested window: November 21–December 5, 2026, subject to each university\'s English-test policy. The initial November 28 date is an editable planning placeholder.</p></div>'+
+'<div class="card"><h2>Events in '+months[month]+'</h2><div class="calendar-event-list">'+(monthEvents.length?monthEvents.map(e=>'<div class="calendar-event-row"><strong>'+esc(e.date.slice(8))+' '+months[month].slice(0,3)+'</strong><div><b>'+esc(e.title)+'</b><small>'+esc(e.description)+' · '+(e.ielts?(state.ieltsBooked?"Booked":"Planning target"):(e.verified?"Marked verified":"Verify date"))+'</small></div>'+(e.ielts?'<button class="btn secondary sm" data-event="ielts">Edit IELTS</button>':'<button class="btn secondary sm" data-event="'+esc(e.uid)+'">Open university</button>')+'</div>').join(""):'<p class="muted">No dates recorded for this month.</p>')+'</div></div>';
+}
+const previousNavigate=navigate;navigate=function(p){previousNavigate(p);if(p==="calendar"){page=p;document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page===p));document.getElementById("title").textContent="Deadline calendar";document.getElementById("subtitle").textContent="See the months in order and every important date.";cal()}};
+nav.onclick=()=>navigate("calendar");
+function shift(n){const d=new Date(state.year,state.month+n,1);state.year=d.getFullYear();state.month=d.getMonth();saveCal();cal()}
+document.addEventListener("click",e=>{
+if(page!=="calendar")return;
+const b=e.target.closest("[data-calmonth]");if(b){state.month=+b.dataset.calmonth;saveCal();cal();return}
+if(e.target.closest("#calPrev"))shift(-1);if(e.target.closest("#calNext"))shift(1);
+if(e.target.closest("#calPrevYear")){state.year--;saveCal();cal()}
+if(e.target.closest("#calNextYear")){state.year++;saveCal();cal()}
+if(e.target.closest("#calToday")){const n=new Date();state.year=n.getFullYear();state.month=n.getMonth();saveCal();cal()}
+const ev=e.target.closest("[data-event]");if(ev){if(ev.dataset.event==="ielts"){document.getElementById("ieltsCalDate")?.focus();document.getElementById("ieltsCalDate")?.scrollIntoView({behavior:"smooth",block:"center"})}else{selected=ev.dataset.event;navigate("workspace")}}
+});
+document.addEventListener("change",e=>{
+if(e.target.id==="ieltsCalDate"){state.ieltsDate=e.target.value;saveCal();cal()}
+if(e.target.id==="ieltsBooked"){state.ieltsBooked=e.target.value==="yes";saveCal();cal()}
+});
+saveCal();
+})();
 </script></body></html>
