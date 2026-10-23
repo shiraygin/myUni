@@ -240,4 +240,85 @@ document.getElementById('zee-quote').textContent=current;input.value='';document
 });
 render();
 })();
+</script>
+<style id="zee-welcome-style">
+.zee-welcome{position:relative;overflow:hidden;background:linear-gradient(115deg,var(--surface,#30273a),var(--surface2,#3a2b45));border:1px solid var(--line,#5d4d69);border-radius:22px;padding:28px 30px;margin:18px 0 22px;min-height:180px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.zee-welcome:before{content:"✦";position:absolute;right:98px;top:-30px;font-size:154px;color:var(--accent,#d6b9f1);opacity:.075;pointer-events:none}
+.zee-welcome-content{position:relative;z-index:1;max-width:660px}
+.zee-quote{font-family:Georgia,serif;font-size:clamp(18px,2.5vw,25px);font-style:italic;color:var(--muted,#d1bfdc);min-height:42px;margin:0 0 16px;line-height:1.4;transition:opacity .25s}
+.zee-greeting{font-family:Georgia,serif;font-size:clamp(30px,4vw,44px);line-height:1.1;margin:0;color:var(--text,#fff)}
+.zee-subtext{color:var(--muted,#b5a7bd);font-size:12px;margin:10px 0 0}
+.zee-next-quote{border:1px solid var(--line,#604f70);background:var(--button2,#403349);color:var(--button2text,#fff);width:39px;height:39px;border-radius:12px;position:relative;z-index:1;flex-shrink:0;cursor:pointer;font-size:20px}
+.zee-next-quote:hover{background:var(--accent,#d6b9f1);color:var(--accent-text,#24182f)}
+.zee-next-quote:focus-visible{outline:2px solid var(--accent,#c4a4df);outline-offset:3px}
+@media(max-width:650px){.zee-welcome{padding:24px 19px;min-height:160px}.zee-quote{font-size:19px}}
+@media(prefers-reduced-motion:reduce){.zee-quote{transition:none}}
+</style>
+<script id="zee-welcome-script">
+(function(){
+  // Personal encouragement, deliberately separate from application progress.
+  const lines=[
+    "When there is desire, there is going to be a flame.",
+    "You don't have to see the whole staircase. Just take the next step.",
+    "Little by little, a little becomes a lot.",
+    "Some days, simply showing up is enough.",
+    "A quiet beginning can still become something extraordinary.",
+    "Not everything needs to be figured out today.",
+    "You're allowed to grow at your own pace.",
+    "Even the smallest step can change your direction.",
+    "Your dreams are allowed to take their time.",
+    "One page, one choice, one day at a time.",
+    "You are becoming someone you haven't met yet.",
+    "There is beauty in beginning again.",
+    "A slow season is still a season of growth.",
+    "You can be uncertain and still move forward.",
+    "Don't confuse a difficult chapter with the whole story.",
+    "Some doors open after a long walk.",
+    "Let curiosity be louder than fear.",
+    "Nothing blooms all year, and neither must you.",
+    "It is okay to rest without giving up.",
+    "You don't need all the answers to begin.",
+    "The future is built in ordinary moments.",
+    "Make room for the person you're becoming.",
+    "Your progress doesn't have to be visible to be real.",
+    "Softly, steadily, you are getting there.",
+    "Courage can look like trying once more.",
+    "Every great journey has an ordinary Tuesday.",
+    "A small light is still a light.",
+    "You are allowed to choose a new direction.",
+    "There is still so much good ahead.",
+    "The next chapter doesn't have to be written tonight."
+  ];
+  const key="myuni-zee-quote-v1",period=5*60*1000;
+  let current=-1,changedAt=0;
+  try{const x=JSON.parse(localStorage.getItem(key));if(Number.isInteger(x.i)&&x.i>=0&&x.i<lines.length&&Number.isFinite(x.t)){current=x.i;changedAt=x.t}}catch{}
+  function choose(force=false){
+    const now=Date.now();
+    if(force||current<0||now-changedAt>=period){
+      let n=Math.floor(Math.random()*lines.length);
+      if(lines.length>1&&n===current)n=(n+1+Math.floor(Math.random()*(lines.length-1)))%lines.length;
+      current=n;changedAt=now;
+      try{localStorage.setItem(key,JSON.stringify({i:current,t:changedAt}))}catch{}
+    }
+    const q=document.getElementById("zee-quote-line");
+    if(q&&q.textContent!==lines[current])q.textContent=lines[current];
+  }
+  function show(){
+    if(typeof page==="undefined"||page!=="home")return;
+    const root=document.getElementById("view");
+    if(!root||root.querySelector("#zee-welcome")){choose();return}
+    const welcome=document.createElement("section");
+    welcome.className="zee-welcome";welcome.id="zee-welcome";
+    welcome.setAttribute("aria-label","A little encouragement for Zee");
+    welcome.innerHTML='<div class="zee-welcome-content"><p class="zee-quote" id="zee-quote-line" aria-live="off"></p><h2 class="zee-greeting">Hello, Zee.</h2><p class="zee-subtext">A little reminder: you can do this one step at a time.</p></div><button class="zee-next-quote" type="button" id="zee-next-quote" aria-label="Show another encouraging thought" title="Another thought">↻</button>';
+    root.prepend(welcome);choose();
+  }
+  // Observe home navigation without altering the existing application logic.
+  const observer=new MutationObserver(()=>{if(page==="home"&&!document.getElementById("zee-welcome"))show()});
+  observer.observe(document.getElementById("view"),{childList:true});
+  document.addEventListener("click",e=>{if(e.target.closest("#zee-next-quote"))choose(true)});
+  setInterval(()=>{if(document.visibilityState!=="hidden")choose()},period);
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){show();choose()}});
+  show();
+})();
 </script></body></html>
