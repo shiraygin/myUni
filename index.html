@@ -843,4 +843,59 @@ if(e.target.dataset.plan){values(findUni())[e.target.dataset.plan]=e.target.valu
 document.addEventListener('input',e=>{if(page!=='essays'||!e.target.dataset.plan)return;values(findUni())[e.target.dataset.plan]=e.target.value;save()});
 const nav=document.querySelector('[data-page="essays"]');if(nav){nav.textContent='✎ Essay notes & prompts';nav.addEventListener('click',()=>setTimeout(()=>{if(page==='essays')render()},0))}
 })();
+</script>
+<style id="essay-reference-style">
+.essay-ref-unis{display:flex;flex-wrap:wrap;gap:9px;margin:15px 0}
+.essay-ref-uni{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px 14px;text-align:left;color:var(--text);cursor:pointer;max-width:300px}
+.essay-ref-uni.active{border:2px solid var(--accent);background:var(--surface2)}
+.essay-ref-uni strong{display:block;font-size:13px}.essay-ref-uni small{display:block;color:var(--muted);margin-top:4px;font-size:11px}
+.essay-ref-cards{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.essay-ref-card{border:1px solid var(--line);border-radius:15px;background:var(--surface);padding:19px;border-top:4px solid #a0cfcb}
+.essay-ref-card.personal{border-top-color:#c6a5df}
+.essay-ref-prompt{padding:13px;border-radius:10px;background:var(--surface2);line-height:1.65;font-size:14px;margin-top:12px}
+.essay-ref-meta{color:var(--muted);font-size:12px;line-height:1.5}
+.essay-ref-label{font-size:11px;font-weight:800;letter-spacing:.7px;color:var(--muted);margin:13px 0 5px}
+.essay-ref-note{padding:10px 13px;border-left:3px solid var(--accent);background:var(--surface2);border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}
+.essay-ref-empty{color:var(--muted);font-style:italic}
+.essay-ref-option{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--surface2);margin:9px 0;font-size:13px;line-height:1.65}
+.essay-ref-flag{font-size:11px;color:var(--warning);margin-top:10px}
+@media(max-width:760px){.essay-ref-cards{grid-template-columns:1fr}}
+</style>
+<script id="essay-reference-script">
+(function(){
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',"'":'&#39;','"':'&quot;'}[c]));
+const localKey='myuni-essay-planning-notes-v1';
+let active='jhu';
+function readNotes(){try{return JSON.parse(localStorage.getItem(localKey))||{}}catch{return {}}}
+function forUni(u){const obj=readNotes();return obj[u.id+'::'+(u.program||'undecided').trim().toLowerCase()]||{}}
+const jhu={
+sop:'Describe your primary interests, related academic or professional experiences, motivation for graduate study at Whiting, the significance of your chosen field, how the program supports your career goals, and why you fit the program.',
+personal:[
+'Option 1 — Discuss how your personal background and life experiences have shaped your perspective and how you would contribute to the Johns Hopkins community.',
+'Option 2 — Describe an engineering challenge affecting your local community and propose one to three engineering solutions that could help address it.'
+]};
+function render(){
+const host=document.getElementById('view');if(!host)return;
+const all=data.unis.filter(u=>u.status!=='closed');const progress=all.filter(u=>u.status==='inprogress');const rest=all.filter(u=>u.status!=='inprogress');
+const selected=all.find(u=>u.id===active)||progress[0]||all[0];if(!selected)return;active=selected.id;
+const n=forUni(selected),isJhu=selected.id==='jhu';
+const card=(kind)=>{
+const personal=kind==='personal',heading=personal?'Personal Statement (POS)':'Statement of Purpose (SOP)';
+const known=isJhu?(personal?'<div class="essay-ref-option"><b>Option 1 — Personal background</b><div>'+esc(jhu.personal[0])+'</div></div><div class="essay-ref-option"><b>Option 2 — Community challenge</b><div>'+esc(jhu.personal[1])+'</div></div>':'<div class="essay-ref-prompt">'+esc(jhu.sop)+'</div>'):'<div class="essay-ref-empty">No confirmed university-specific prompt shared yet.</div>';
+const req=isJhu?(personal?'Optional · choose one · maximum one page':'Required · maximum 1,000 words'):'Requirement not yet confirmed';
+const own=(n[kind+'Notes']||'').trim(),prompt=(n[kind+'Prompt']||'').trim();
+return '<section class="essay-ref-card '+kind+'"><h2>'+heading+'</h2><p class="essay-ref-meta">'+esc(req)+'</p><div class="essay-ref-label">PROMPT / WHAT TO ADDRESS</div>'+known+(prompt?'<div class="essay-ref-label">PROMPT SAVED PREVIOUSLY</div><div class="essay-ref-prompt">'+esc(prompt)+'</div>':'')+(isJhu?'<p class="essay-ref-flag">These are paraphrased from the application instructions you shared, not guaranteed verbatim portal text.</p>':'<p class="essay-ref-flag">Check your program’s portal before relying on a prompt.</p>')+'<div class="essay-ref-label">MY SAVED NOTES</div>'+(own?'<div class="essay-ref-note">'+esc(own)+'</div>':'<div class="essay-ref-empty">No notes saved.</div>')+'</section>';
+};
+const chip=u=>'<button class="essay-ref-uni '+(u.id===selected.id?'active':'')+'" data-refuni="'+esc(u.id)+'"><strong>'+esc(u.name)+'</strong><small>'+esc(u.program||'Program undecided')+'</small></button>';
+host.innerHTML='<div class="hint"><strong>Reference board — no writing forms.</strong> Read the prompts, remember the requirements and see any notes you saved earlier. Your existing drafts and notes remain stored in this browser.</div>'+
+'<div class="essay-ref-label">IN PROGRESS · QUICK ACCESS</div><div class="essay-ref-unis">'+(progress.length?progress.map(chip).join(''):'<span class="essay-ref-empty">No applications marked in progress.</span>')+'</div>'+
+'<details class="vault-card"><summary>Other universities ('+rest.length+')</summary><div class="essay-ref-unis">'+rest.map(chip).join('')+'</div></details>'+
+'<div class="essay-hero"><div class="essay-ref-label">SELECTED UNIVERSITY</div><h2>'+esc(selected.name)+'</h2><div class="essay-program-line">'+esc(selected.program||'Program undecided')+'</div></div><div class="essay-ref-cards">'+card('sop')+card('personal')+'</div>';
+document.getElementById('title').textContent='SOP & POS reference';document.getElementById('subtitle').textContent='Your university prompts, major and saved notes at a glance.';
+}
+const before=navigate;
+navigate=function(p){if(p==='essays'){before(p);page='essays';document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('active',n.dataset.page===p));render();return}before(p)};
+document.addEventListener('click',e=>{if(page!=='essays')return;const b=e.target.closest('[data-refuni]');if(b){active=b.dataset.refuni;render()}});
+const btn=document.querySelector('[data-page="essays"]');if(btn)btn.textContent='✎ SOP & POS reference';
+})();
 </script></body></html>
