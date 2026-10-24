@@ -796,4 +796,51 @@ const target=document.getElementById('view');if(target)new MutationObserver(()=>
 document.addEventListener('click',()=>queueMicrotask(install));
 install();
 })();
+</script>
+<style id="essay-planning-board-style">
+.essay-plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:15px}
+.essay-plan-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+.essay-plan-card h2{margin:0 0 8px}.essay-plan-card.personal{border-top:4px solid #b7a3dc}.essay-plan-card.sop{border-top:4px solid #8acfc6}
+.essay-plan-card textarea{min-height:95px;resize:vertical;line-height:1.6}
+.essay-plan-card .essay-notes{min-height:160px}
+.essay-plan-eyebrow{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);margin:12px 0 5px}
+.essay-prompt-help{font-size:12px;color:var(--muted);margin:6px 0 0}
+.essay-program-line{padding:10px 14px;border-radius:10px;background:var(--surface2);border-left:4px solid var(--accent);font-weight:700}
+.essay-plan-choice{display:grid;gap:8px;margin:10px 0}
+.essay-plan-choice label{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);background:var(--surface2);padding:11px;border-radius:9px;cursor:pointer;font-size:13px}
+.essay-plan-choice input{width:auto;margin:2px 0 0;accent-color:var(--accent)}
+@media(max-width:760px){.essay-plan-grid{grid-template-columns:1fr}}
+</style>
+<script id="essay-planning-board-script">
+(function(){
+const key='myuni-essay-studio-v1',noteKey='myuni-essay-planning-notes-v1';
+let notes={};try{notes=JSON.parse(localStorage.getItem(noteKey))||{}}catch{}
+const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const findUni=()=>data.unis.find(u=>u.id===selectedUniId)||data.unis[0];
+let selectedUniId=data.unis[0]?.id;
+function getDrafts(){try{return JSON.parse(localStorage.getItem(key))||{}}catch{return {}}}
+function keyFor(u){return u.id+'::'+(u.program||'undecided').trim().toLowerCase()}
+function all(u){const drafts=getDrafts();return drafts[keyFor(u)]||{}}
+function save(){localStorage.setItem(noteKey,JSON.stringify(notes))}
+function values(u){const k=keyFor(u);if(!notes[k]){const d=all(u);notes[k]={sopPrompt:d.sopPrompt||'',personalPrompt:d.personalPrompt||'',sopNotes:'',personalNotes:'',sopRequirement:d.sopRequirement||'unknown',personalRequirement:d.personalRequirement||'unknown',choice:localStorage.getItem('myuni-jhu-personal-prompt-choice')||'',sopTopics:d.sopTopics||'',personalTopics:d.personalTopics||''};save()}return notes[k]}
+function render(){
+const u=findUni();if(!u)return;const d=values(u);
+document.getElementById('title').textContent='Essay Planning Board';document.getElementById('subtitle').textContent='Prompts and notes for each university and major.';
+document.getElementById('view').innerHTML='<div class="hint"><strong>Planning only.</strong> Write your essays anywhere you like. Save the official prompts and your thoughts here; previous essay drafts are preserved in your browser and are not deleted.</div>'+
+'<div class="essay-hero"><div class="essay-picker"><div><label>UNIVERSITY</label><select id="planUni">'+data.unis.map(x=>'<option value="'+safe(x.id)+'" '+(x.id===u.id?'selected':'')+'>'+safe(x.name)+'</option>').join('')+'</select></div><div><label>MAJOR / PROGRAM</label><div class="essay-program-line">'+safe(u.program||'Not selected')+'</div></div></div><p class="essay-prompt-help">To change the program, edit it in the university details. Notes are kept separately for each university + program.</p></div>'+
+'<div class="essay-plan-grid">'+['sop','personal'].map(type=>{const isPersonal=type==='personal',name=isPersonal?'Personal Statement (POS)':'Statement of Purpose (SOP)';return '<section class="essay-plan-card '+type+'"><h2>'+name+'</h2><div class="essay-plan-eyebrow">IS IT REQUIRED?</div><select data-plan="'+type+'Requirement">'+['unknown','required','optional','not required'].map(o=>'<option value="'+o+'" '+(d[type+'Requirement']===o?'selected':'')+'>'+o+'</option>').join('')+'</select>'+
+(isPersonal&&u.id==='jhu'?'<div class="essay-plan-eyebrow">JOHNS HOPKINS — CHOOSE ONE</div><div class="essay-plan-choice"><label><input type="radio" name="jhu-plan-choice" value="1" '+(d.choice==='1'?'checked':'')+'><span><strong>Option 1 · Personal background</strong><br>How your experiences shaped you and how you would contribute to the university community.</span></label><label><input type="radio" name="jhu-plan-choice" value="2" '+(d.choice==='2'?'checked':'')+'><span><strong>Option 2 · Community engineering challenge</strong><br>A local engineering challenge and what you could do to address it.</span></label></div><p class="essay-prompt-help">These are summaries, not verified verbatim prompts. Confirm the exact admissions wording. Personal statement: one-page limit.</p>':'')+
+'<div class="essay-plan-eyebrow">OFFICIAL PROMPT / QUESTIONS</div><textarea data-plan="'+type+'Prompt" placeholder="Paste the exact university prompt here...">'+safe(d[type+'Prompt']||'')+'</textarea><p class="essay-prompt-help">Keep the official question here so you can refer to it while writing elsewhere.</p><div class="essay-plan-eyebrow">MY THOUGHTS & IDEAS</div><textarea class="essay-notes" data-plan="'+type+'Notes" placeholder="My angle, examples, stories, evidence, ideas to include, what I still need to research...">'+safe(d[type+'Notes']||'')+'</textarea><p class="essay-prompt-help">Autosaved to this browser.</p></section>'}).join('')+'</div>';
+}
+const original=navigate;
+navigate=function(p){if(p==='essays'){original(p);page='essays';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===p));render();return}original(p)};
+document.addEventListener('change',e=>{
+if(page!=='essays')return;
+if(e.target.id==='planUni'){selectedUniId=e.target.value;render();return}
+if(e.target.name==='jhu-plan-choice'){values(findUni()).choice=e.target.value;localStorage.setItem('myuni-jhu-personal-prompt-choice',e.target.value);save();return}
+if(e.target.dataset.plan){values(findUni())[e.target.dataset.plan]=e.target.value;save()}
+});
+document.addEventListener('input',e=>{if(page!=='essays'||!e.target.dataset.plan)return;values(findUni())[e.target.dataset.plan]=e.target.value;save()});
+const nav=document.querySelector('[data-page="essays"]');if(nav){nav.textContent='✎ Essay notes & prompts';nav.addEventListener('click',()=>setTimeout(()=>{if(page==='essays')render()},0))}
+})();
 </script></body></html>
