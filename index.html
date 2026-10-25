@@ -649,11 +649,30 @@ saveInv();if(page==='inventory')renderInventory();
 @media(max-width:1000px){.calendar-months{grid-template-columns:repeat(6,1fr)}}
 @media(max-width:600px){.calendar-months{grid-template-columns:repeat(4,1fr)}.calendar-cell{min-height:66px;padding:5px 3px}.calendar-label{font-size:9px;padding:3px 2px}.calendar-event-row{grid-template-columns:75px 1fr}.calendar-event-row button{grid-column:2}.calendar-number{font-size:11px}}
 </style>
+<script id="uchicago-round-one-update">
+(function(){
+const k='myuni-uchicago-round1-v1';
+if(localStorage.getItem(k)==='done')return;
+const u=data.unis.find(x=>x.id==='uchicago');
+if(u){
+ u.status='inprogress';
+ u.priority='2026-11-02';
+ u.deadline='2027-02-01';
+ u.verified='yes';
+ u.program='Program selection pending — central master\'s application';
+ u.portal='https://advscholars.uchicago.edu/apply/';
+ u.notes='Applying for Round 1 of the University of Chicago central master\'s application. Round 1 deadline: November 2, 2026; reply date: January 15, 2027. Round 2 deadline: February 1, 2027 (backup only). Program choice is not yet confirmed. The earlier Applied AI dates referred to another application and are replaced. Requirements: unofficial transcripts, CV/resume, two recommendations, and program-specific supplement if required. Source: instructions in the application portal.';
+ save();
+}
+try{const ck='myuni-calendar-v1';const old=JSON.parse(localStorage.getItem(ck)||'{}');if(!old.uchicagoRound1Seen){old.year=2026;old.month=10;old.uchicagoRound1Seen=true;localStorage.setItem(ck,JSON.stringify(old))}}catch{}
+localStorage.setItem(k,'done');
+})();
+</script>
 <script id="deadline-calendar-script">
 (function(){
 const KEY="myuni-calendar-v1",months=["January","February","March","April","May","June","July","August","September","October","November","December"];
 let state;try{state=JSON.parse(localStorage.getItem(KEY))}catch{}
-if(!state||typeof state!=="object")state={year:2026,month:9,ieltsDate:"2026-11-28",ieltsBooked:false};
+if(!state||typeof state!=="object")state={year:2026,month:10,ieltsDate:"2026-11-28",ieltsBooked:false};
 if(!state.ieltsDate)state.ieltsDate="2026-11-28";
 const saveCal=()=>localStorage.setItem(KEY,JSON.stringify(state));
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -663,8 +682,8 @@ function events(){
 const arr=[];
 for(const u of data.unis){
 if(u.status==="closed")continue;
-if(u.priority)arr.push({date:u.priority,title:u.name,description:"Priority • "+u.program,verified:u.verified==="yes",uid:u.id});
-if(u.deadline)arr.push({date:u.deadline,title:u.name,description:"Final • "+u.program,verified:u.verified==="yes",uid:u.id});
+if(u.priority)arr.push({date:u.priority,title:u.name,description:(u.id==="uchicago"?"ROUND 1 · YOUR CHOSEN ROUND • ":"Priority • ")+u.program,verified:u.verified==="yes",uid:u.id});
+if(u.deadline)arr.push({date:u.deadline,title:u.name,description:(u.id==="uchicago"?"ROUND 2 · alternative • ":"Final • ")+u.program,verified:u.verified==="yes",uid:u.id});
 }
 if(state.ieltsDate)arr.push({date:state.ieltsDate,title:"IELTS Academic",description:state.ieltsBooked?"Booked test date":"Personal target — not booked",ielts:true});
 return arr.sort((a,b)=>a.date.localeCompare(b.date))
