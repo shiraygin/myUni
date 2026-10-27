@@ -917,4 +917,29 @@ navigate=function(p){if(p==='essays'){before(p);page='essays';document.querySele
 document.addEventListener('click',e=>{if(page!=='essays')return;const b=e.target.closest('[data-refuni]');if(b){active=b.dataset.refuni;render()}});
 const btn=document.querySelector('[data-page="essays"]');if(btn)btn.textContent='✎ SOP & POS reference';
 })();
+</script><style id="uchicago-supplement-fix-style">
+.uc-supplement{margin:15px 0;padding:18px;border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:14px;background:var(--surface)}
+.uc-supplement details{margin:9px 0;background:var(--surface2);padding:11px;border-radius:9px}
+.uc-supplement summary{font-weight:700;cursor:pointer}
+.uc-supplement blockquote{white-space:pre-wrap;margin:10px 0;line-height:1.6;font-size:13px}
+</style>
+<script id="uchicago-supplement-fix-script">
+(function(){
+ const u=data.unis.find(x=>x.id==='uchicago');
+ if(u){
+  u.status='inprogress';u.program='MS in Applied Artificial Intelligence';u.track='Applied Artificial Intelligence';
+  u.priority='2026-11-02';u.deadline='2027-02-01';u.verified='yes';
+  u.portal='https://advscholars.uchicago.edu/apply/';
+  u.tests='GRE/GMAT optional; UChicago central portal permits applicants to omit English scores if proficiency is demonstrated (confirm program-specific policy)';
+  u.notes='Round 1 selected: Nov 2, 2026. Main application through Advanced Scholars portal. Program: MS Applied Artificial Intelligence (confirmed by Program Supplement). Two recommendation letters, CV, transcript. After submission via status page: Python/R experience and academic coursework supplement. Two required video responses, approximately 90 seconds each. Video 1: compare a movie depicting fully developed AI with real-world AI development and risks. Video 2: examine paperclip theory in a chosen domain and explain reasoning. Verify the video submission deadline.';
+  save();
+ }
+ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',"'":'&#39;','"':'&quot;'}[c]));
+ const p1='Based on the movies that cover a fully-developed AI (like 2001: A Space Odyssey, Her, Terminator, I-Robot, Ex-Machina, Matrix, etc. or any other that you like), which one was the most successful in reflecting the AI that ended up happening or looks like going to happen and displays the real dangers that it could bring if/when developed to completion. Why?';
+ const p2='Choose a domain like finance, healthcare, or something that you are passionate about, and explain how the paperclip theory can or cannot have an impact in that domain. Clearly state your thought process of how you arrived at your conclusion.';
+ const panel='<section class="uc-supplement"><h2>UChicago · Applied AI program supplement</h2><p class="muted">From the Program Supplement you shared. Required video responses: approximately <strong>1:30 each</strong>.</p><details open><summary>Video 1 · AI movie and real-world risks</summary><blockquote>'+esc(p1)+'</blockquote></details><details><summary>Video 2 · Paperclip theory in a domain</summary><blockquote>'+esc(p2)+'</blockquote></details><details><summary>Other program-specific materials</summary><p>Detail your Python and/or R experience and relevant prior coursework. Complete the academic coursework supplement via the application status page after submitting the main application. Upload your résumé/CV in the main application. Check the status page for video submission instructions and deadline.</p></details><p class="muted">Round 1: <strong>November 2, 2026</strong> · Specific program: MS in Applied Artificial Intelligence</p></section>';
+ const view=document.getElementById('view');
+ if(view)new MutationObserver(()=>{if(page!=='essays')return;const v=document.getElementById('view');if(!v||v.querySelector('.uc-supplement'))return;const h=v.querySelector('.essay-hero');if(h&&h.textContent.includes('University of Chicago'))h.insertAdjacentHTML('afterend',panel)}).observe(view,{childList:true,subtree:false});
+ document.addEventListener('click',()=>queueMicrotask(()=>{if(page!=='essays')return;const v=document.getElementById('view');const h=v?.querySelector('.essay-hero');if(h&&h.textContent.includes('University of Chicago')&&!v.querySelector('.uc-supplement'))h.insertAdjacentHTML('afterend',panel)}));
+})();
 </script></body></html>
