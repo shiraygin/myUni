@@ -409,16 +409,22 @@ if(page==='resume')renderConversation();
 </style>
 <script id="resume-calm-script">
 (function(){
- const ids=['jhu','washu'];
+ const ids=['uchicago','jhu','washu'];
+ const chicagoTasks=['Complete program selection and applicant details','Confirm academic history and upload unofficial transcript','Upload current resume/CV','Invite two recommenders and check both submissions','Complete any required program-specific application fields','Submit the Round 1 application by November 2, 2026','After submission: provide Python/R experience details','After submission: complete academic coursework supplement','Record Video #1 (AI movie, predicted reality and risks; about 90 seconds)','Record Video #2 (paperclip theory in a chosen domain; about 90 seconds)','Upload/submit both required videos through the designated status-page process','Verify post-submission supplement/video deadlines and save submission confirmations'];
+ const chicagoKey='myuni-chicago-resume-tasks-v1';
+ const getChicagoDone=()=>{try{return JSON.parse(localStorage.getItem(chicagoKey))||{}}catch{return {}}};
  const finished={
+ uchicago:['Confirmed MS in Applied Artificial Intelligence in program supplement','Selected Round 1 (November 2, 2026)','Reviewed optional English test policy and required video prompts'],
  jhu:['Chose Computer Science (AI interest)','Reviewed courses and background','Prepared MOI certificate request','Reviewed essay and reference requirements'],
  washu:['Started McKelvey application','Filled out academic-history guidance','Mapped prerequisite courses','Drafted KACST research-experience text']
  };
  const nextSteps={
+ uchicago:['Complete remaining main application fields and upload CV/transcript','Check both recommendation requests and submit Round 1 by Nov 2','Plan the two required videos and coursework/Python supplement'],
  jhu:['Write and tailor your SOP','Check the English-waiver decision','Check recommendations and uploads'],
  washu:['Confirm your exact program','Finish the KACST research fields','Confirm English requirement']
  };
  const details={
+ uchicago:{done:['Selected Round 1 in the University of Chicago central master\'s portal.','Program Supplement confirms MS in Applied Artificial Intelligence.','Reviewed that English proficiency exam scores may be optional under the general portal policy.','Read both required video prompts; each response is approximately 90 seconds.'],todo:chicagoTasks},
  jhu:{done:['MSE Computer Science selected; Artificial Intelligence area of interest.','MOI certificate request drafted and sent to the university.','Academic prerequisites and employment entries discussed.','SOP, recommendations and optional personal statement requirements reviewed.'],todo:['Finish SOP (maximum 1,000 words).','Decide on optional personal statement and work sample.','Check MOI waiver approval or English test.','Check recommendation invitations and uploaded documents.','Review application and submit; save confirmation.']},
  washu:{done:['McKelvey School of Engineering application started.','Academic history and equivalent courses mapped.','KACST mentor and research experience wording drafted.','English proficiency and employment entries discussed.'],todo:['Confirm exact degree and 2027 deadline.','Fill real KACST hours/week and compensation.','Confirm English test or exemption.','Complete SOP, references and required uploads.','Submit and save confirmation.']}
  };
@@ -427,18 +433,19 @@ if(page==='resume')renderConversation();
  function renderCalm(){
   const root=document.getElementById('view');if(!root)return;
   const current=ids.map(id=>data.unis.find(u=>u.id===id)).filter(Boolean);
-  root.innerHTML='<div class="resume-more-note"><strong>Just two applications.</strong> Focus on the next three steps. Open details only when you need them. “Worked on” means we discussed it here, not that the portal confirmed it.</div><div class="resume-calm">'+current.map(u=>{
-   const id=u.id,checked=(u.done||[]).length,rate=data.extra?.acceptance?.[id]||({jhu:'45–60%',washu:'40–55%'}[id]),deadline=next(u).date||'TBD';
+  root.innerHTML='<div class="resume-more-note"><strong>Your active applications.</strong> Focus on the next three steps. Open details only when you need them. “Worked on” means we discussed it here, not that the portal confirmed it.</div><div class="resume-calm">'+current.map(u=>{
+   const id=u.id,checked=id==='uchicago'?Object.values(getChicagoDone()).filter(Boolean).length:(u.done||[]).length,rate=data.extra?.acceptance?.[id]||({jhu:'45–60%',washu:'40–55%'}[id]),deadline=next(u).date||'TBD';
    return '<section class="resume-calm-card"><div class="resume-heading"><div><h2>'+h(u.name)+'</h2><p class="resume-major">'+h(u.program)+'</p></div><div class="resume-controls"><button class="btn" data-select="'+h(id)+'">Continue application →</button>'+(u.portal?'<a class="btn secondary" href="'+h(u.portal)+'" target="_blank" rel="noopener">Open portal ↗</a>':'')+'</div></div>'+
    '<div class="resume-status-line"><span class="resume-status pending">◷ In progress</span><span class="resume-status '+(u.verified==='yes'?'ok':'pending')+'">Deadline: '+h(deadline)+(u.verified==='yes'?'':' · Verify')+'</span><span class="resume-status">Previous estimate: '+h(rate)+'</span></div>'+
    '<div class="resume-focus"><h3>Focus on these 3 things</h3>'+nextSteps[id].map((x,i)=>'<div class="resume-focus-line"><span class="resume-focus-num">'+(i+1)+'</span><span>'+h(x)+'</span></div>').join('')+'</div>'+
-   '<div class="resume-summary"><div class="resume-summary-box"><span class="micro">Already discussed</span><b style="color:var(--success)">'+finished[id].length+'</b><span class="micro">topics</span></div><div class="resume-summary-box"><span class="micro">Portal checklist</span><b>'+checked+' / '+taskNames.length+'</b><span class="micro">checked by you</span></div><div class="resume-summary-box"><span class="micro">Deadline countdown</span><b>'+countdown(u)+'</b><span class="micro">'+(u.verified==='yes'?'Date marked verified':'Needs verification')+'</span></div></div>'+
+   (id==='uchicago'?'<div class="uc-resume-taskbox"><div class="uc-tasks-head"><strong>Application tasks · mark only what you have actually completed</strong><span>'+checked+' / '+chicagoTasks.length+' complete</span></div><div class="uc-tasklist">'+chicagoTasks.map((task,i)=>'<label class="uc-task"><input type="checkbox" data-uchicago-task="'+i+'" '+(getChicagoDone()[i]?'checked':'')+'><span>'+h(task)+'</span></label>').join('')+'</div></div>':'')+'<div class="resume-summary"><div class="resume-summary-box"><span class="micro">Already discussed</span><b style="color:var(--success)">'+finished[id].length+'</b><span class="micro">topics</span></div><div class="resume-summary-box"><span class="micro">Portal checklist</span><b>'+checked+' / '+(id==='uchicago'?chicagoTasks.length:taskNames.length)+'</b><span class="micro">checked by you</span></div><div class="resume-summary-box"><span class="micro">Deadline countdown</span><b>'+countdown(u)+'</b><span class="micro">'+(u.verified==='yes'?'Date marked verified':'Needs verification')+'</span></div></div>'+
    '<details class="resume-details"><summary>Show full progress & remaining tasks</summary><div class="resume-detail-cols"><div class="resume-detail-col"><h4 style="color:var(--success)">✓ Worked on together</h4>'+list(details[id].done,'done')+'</div><div class="resume-detail-col"><h4 style="color:var(--warning)">○ Still to check or finish</h4>'+list(details[id].todo,'todo')+'</div></div><div class="resume-more-note">Previous acceptance estimate is not an official or individualized probability; estimates may refer to another major. Portal tasks are not marked complete automatically.</div><button class="btn secondary sm" data-checkresume="'+h(id)+'">Open detailed checklist →</button></details>'+
    '</section>'
   }).join('')+'</div><div class="resume-more-note">Other universities are kept under <strong>Universities</strong> until you actually start applying.</div>';
  }
  const prev=navigate;navigate=function(p){prev(p);if(p==='resume')renderCalm()};
  const navigation=document.querySelector('[data-page="resume"]');if(navigation)navigation.onclick=()=>navigate('resume');
+ document.addEventListener('change',e=>{if(e.target.matches('[data-uchicago-task]')){const values=getChicagoDone();values[e.target.dataset.uchicagoTask]=e.target.checked;localStorage.setItem(chicagoKey,JSON.stringify(values));if(page==='resume')renderCalm()}});
  document.addEventListener('click',e=>{if(e.target.closest('#goResume'))setTimeout(()=>{if(page==='resume')renderCalm()},0)},true);
  if(page==='resume')renderCalm();
 })();
@@ -942,4 +949,4 @@ const btn=document.querySelector('[data-page="essays"]');if(btn)btn.textContent=
  if(view)new MutationObserver(()=>{if(page!=='essays')return;const v=document.getElementById('view');if(!v||v.querySelector('.uc-supplement'))return;const h=v.querySelector('.essay-hero');if(h&&h.textContent.includes('University of Chicago'))h.insertAdjacentHTML('afterend',panel)}).observe(view,{childList:true,subtree:false});
  document.addEventListener('click',()=>queueMicrotask(()=>{if(page!=='essays')return;const v=document.getElementById('view');const h=v?.querySelector('.essay-hero');if(h&&h.textContent.includes('University of Chicago')&&!v.querySelector('.uc-supplement'))h.insertAdjacentHTML('afterend',panel)}));
 })();
-</script></body></html>
+</script><style id="uc-resume-tasks-css">.uc-resume-taskbox{margin:15px 0;background:var(--surface2);padding:15px;border:1px solid var(--line);border-radius:13px}.uc-tasks-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}.uc-tasks-head span{color:var(--success);font-weight:700}.uc-tasklist{display:grid;grid-template-columns:1fr 1fr;gap:8px}.uc-task{display:flex;align-items:flex-start;gap:9px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:11px;font-size:13px;line-height:1.45;cursor:pointer}.uc-task input{width:auto;accent-color:var(--success);margin-top:3px}.uc-task:has(input:checked){border-color:var(--success);opacity:.82}.uc-task:has(input:checked) span{text-decoration:line-through;color:var(--muted)}@media(max-width:740px){.uc-tasklist{grid-template-columns:1fr}}</style></body></html>
